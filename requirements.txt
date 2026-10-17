@@ -1,0 +1,7 @@
+browserbase
+playwright
+python-dotenv
+requests
+apscheduler
+beautifulsoup4
+pytest
