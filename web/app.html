@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Land Record Watch</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600&family=Noto+Sans+Kannada:wght@400;600&family=Noto+Sans+Devanagari:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3f7f2;--card:#fff;--ink:#12261a;--muted:#5b7063;--line:#dbe6dc;
+  --green:#1d4d33;--green-2:#2f7a4f;--mint:#e3f2e7;--mint-2:#c9e6d2;
+  --crit:#b42318;--crit-bg:#fdeceb;--high:#b45309;--high-bg:#fff1dc;--med:#1d4d33;--med-bg:#e3f2e7;--ops:#475467;--ops-bg:#eceff3;
+  --sim:#7a5b00;--sim-bg:#fff4cc;--shadow:0 1px 2px rgba(18,38,26,.06),0 8px 24px rgba(18,38,26,.07);
+}
+:root[data-theme=dark]{
+  --bg:#0d1711;--card:#14231a;--ink:#e8f1ea;--muted:#9fb5a6;--line:#244032;
+  --green:#6fd09a;--green-2:#4fb27b;--mint:#183626;--mint-2:#22513a;
+  --crit:#ff8a80;--crit-bg:#3a1714;--high:#ffbd66;--high-bg:#3a2810;--med:#6fd09a;--med-bg:#183626;--ops:#b7c2cf;--ops-bg:#232c36;
+  --sim:#ffd666;--sim-bg:#3a3010;--shadow:none;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){
+  --bg:#0d1711;--card:#14231a;--ink:#e8f1ea;--muted:#9fb5a6;--line:#244032;
+  --green:#6fd09a;--green-2:#4fb27b;--mint:#183626;--mint-2:#22513a;
+  --crit:#ff8a80;--crit-bg:#3a1714;--high:#ffbd66;--high-bg:#3a2810;--med:#6fd09a;--med-bg:#183626;--ops:#b7c2cf;--ops-bg:#232c36;
+  --sim:#ffd666;--sim-bg:#3a3010;--shadow:none;}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Inter,"Noto Sans Kannada","Noto Sans Devanagari",system-ui,sans-serif;
+  background-image:radial-gradient(900px 380px at 50% -120px,var(--mint-2),transparent 70%)}
+.wrap{max-width:1160px;margin:0 auto;padding:16px max(16px,env(safe-area-inset-left)) 56px}
+header{display:flex;align-items:center;gap:12px;padding:6px 0 18px;flex-wrap:wrap}
+.logo{width:44px;height:44px;border-radius:14px;background:var(--green);display:grid;place-items:center;flex:none}
+.logo svg{width:24px;height:24px;stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+header h1{font:700 18px/1.2 Fraunces,serif;margin:0}
+header p{margin:0;font-size:12.5px;color:var(--muted)}
+.tools{margin-left:auto;display:flex;gap:6px;align-items:center}
+.seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px}
+.seg button{border:0;background:none;color:var(--muted);font:600 12.5px inherit;font-family:inherit;padding:6px 10px;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--green);color:var(--card)}
+.icon{border:1px solid var(--line);background:var(--card);color:var(--ink);width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:15px}
+.pill{display:inline-flex;gap:7px;align-items:center;font:600 11.5px/1 Inter;letter-spacing:.08em;text-transform:uppercase;color:var(--green);background:var(--mint);padding:8px 12px;border-radius:999px}
+.pill i{width:7px;height:7px;border-radius:50%;background:var(--green-2);box-shadow:0 0 0 0 var(--green-2);animation:pulse 2s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 8px transparent}}
+@media (prefers-reduced-motion:reduce){.pill i{animation:none}*{transition:none!important}}
+.hero h2{font:700 clamp(30px,8vw,40px)/1.1 Fraunces,serif;margin:16px 0 10px;letter-spacing:-.01em}
+.hero p{margin:0 0 22px;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px}
+.sketch{height:104px;background:var(--mint);position:relative}
+.sketch svg{width:100%;height:100%;display:block}
+.pad{padding:18px 20px}
+.eyebrow{font:600 11.5px/1 Inter;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+.pid{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pid b{font:700 22px Fraunces,serif}
+.tag{font:600 11px/1 Inter;padding:5px 8px;border-radius:6px;background:var(--ops-bg);color:var(--ops)}
+.tag.sim{background:var(--sim-bg);color:var(--sim)}
+.meta{color:var(--muted);font-size:14px;margin:6px 0 0}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 20px;border-top:1px solid var(--line);font-size:14.5px}
+.row span:first-child{color:var(--muted)}
+.status{border-radius:18px;padding:16px 18px;margin:0 16px 16px;display:flex;gap:12px}
+.status .dot{width:36px;height:36px;border-radius:50%;flex:none;display:grid;place-items:center;font-weight:700}
+.status h3{margin:0 0 3px;font:700 17px Fraunces,serif}
+.status p{margin:0;font-size:14.5px}
+.s-medium{background:var(--med-bg)}.s-medium .dot{background:var(--green);color:var(--card)}
+.s-high{background:var(--high-bg)}.s-high .dot{background:var(--high);color:var(--card)}
+.s-critical{background:var(--crit-bg)}.s-critical .dot{background:var(--crit);color:var(--card)}
+.s-ops{background:var(--ops-bg)}.s-ops .dot{background:var(--ops);color:var(--card)}
+.s-none{background:var(--mint)}.s-none .dot{background:var(--green-2);color:var(--card)}
+.btn{display:flex;width:calc(100% - 32px);margin:0 16px 16px;justify-content:center;gap:8px;align-items:center;border:0;cursor:pointer;
+  background:var(--green);color:var(--card);font:600 16px Inter,"Noto Sans Kannada",sans-serif;padding:16px;border-radius:16px;transition:transform .15s}
+.btn:hover{transform:translateY(-1px)}
+:root[data-theme=dark] .btn{color:#0d1711}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .btn{color:#0d1711}}
+.btn:focus-visible,.icon:focus-visible,.seg button:focus-visible{outline:3px solid var(--green-2);outline-offset:2px}
+.layout{max-width:560px;margin:0 auto}
+@media (min-width:900px){
+  .wrap{padding-top:28px}
+  header{padding-bottom:30px}
+  .layout{max-width:none;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,520px);gap:64px;align-items:start}
+  .hero{position:sticky;top:32px;padding-top:28px}
+  .hero h2{font-size:clamp(46px,4.6vw,64px);line-height:1.05}
+  .hero p{font-size:18px;max-width:30em}
+  .note{max-width:560px}
+  .sheet{align-items:center}
+  .panel{border-radius:26px;max-width:640px;max-height:88vh;padding:24px 26px 30px}
+}
+/* detail sheet */
+.sheet{position:fixed;inset:0;background:rgba(8,16,11,.5);display:none;align-items:flex-end;justify-content:center;z-index:5}
+.sheet.open{display:flex}
+.panel{background:var(--bg);width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:26px 26px 0 0;padding:18px 18px 34px;animation:up .25s ease}
+@keyframes up{from{transform:translateY(40px);opacity:0}}
+.panel h3{font:700 22px Fraunces,serif;margin:4px 0 12px}
+.close{float:right}
+.chip{font:600 11.5px/1 Inter;padding:6px 10px;border-radius:999px;text-transform:uppercase;letter-spacing:.06em}
+.c-medium{background:var(--med-bg);color:var(--med)}.c-high{background:var(--high-bg);color:var(--high)}
+.c-critical{background:var(--crit-bg);color:var(--crit)}.c-ops{background:var(--ops-bg);color:var(--ops)}
+.diff{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin:8px 0}
+.diff .b{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:14px}
+.diff .b small{display:block;color:var(--muted);font-size:11.5px}
+.diff .b.new{border-color:var(--green-2);background:var(--mint)}
+.msg{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;font-size:15px;margin:10px 0}
+.listen{background:none;border:1px solid var(--line);color:var(--ink);border-radius:999px;padding:8px 14px;cursor:pointer;font:600 13px inherit;font-family:inherit}
+ol.tl{list-style:none;margin:8px 0 0;padding:0 0 0 18px;border-left:2px solid var(--line)}
+ol.tl li{position:relative;margin:0 0 14px;font-size:14px}
+ol.tl li:before{content:"";position:absolute;left:-25px;top:6px;width:10px;height:10px;border-radius:50%;background:var(--green-2)}
+ol.tl small{color:var(--muted);display:block}
+.note{font-size:13px;color:var(--muted);margin-top:18px;border-top:1px dashed var(--line);padding-top:14px}
+.guard{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 0}
+.guard span{font-size:12.5px;background:var(--mint);color:var(--green);padding:6px 10px;border-radius:999px}
+
+@media (min-width:900px){
+  .wrap{max-width:1160px;padding-top:28px}
+  header{padding-bottom:36px}
+  .layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,520px);gap:64px;align-items:start}
+  .hero{position:sticky;top:32px;padding-top:24px}
+  .hero h2{font-size:clamp(44px,5vw,64px);margin-top:22px}
+  .hero p{font-size:18px;max-width:34ch}
+  .sheet{align-items:center}
+  .panel{max-width:640px;border-radius:26px;max-height:88vh}
+  .note{text-align:center;max-width:640px;margin:40px auto 0}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 21V8l8-5 8 5v13"/><path d="M9 21v-6h6v6"/></svg></div>
+    <div><h1>Land Record Watch</h1><p data-t="tag"></p></div>
+    <div class="tools">
+      <div class="seg" role="group" aria-label="Language">
+        <button data-l="en" aria-pressed="true">EN</button><button data-l="kn" aria-pressed="false">ಕನ್ನಡ</button><button data-l="hi" aria-pressed="false">हिं</button>
+      </div>
+      <button class="icon" id="theme" aria-label="Toggle dark mode">◐</button>
+    </div>
+  </header>
+
+  <div class="layout"><section class="hero">
+    <span class="pill"><i></i><span data-t="pill"></span></span>
+    <h2 data-t="hero"></h2>
+    <p data-t="sub"></p>
+  </section>
+
+  <main id="parcels"></main></div>
+
+  <p class="note" data-t="foot"></p>
+</div>
+
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Change details"><div class="panel" id="panel"></div></div>
+
+<script>
+const T={
+en:{tag:"Your land. Your records. Your alerts.",pill:"Monitoring concept",hero:"Know when your land records change.",
+ sub:"We watch the public record for your own parcel and tell you, in your language, the moment something changes.",
+ mine:"Your monitored parcel",last:"Last check",never:"Not checked yet",src:"Source",
+ none:"No change detected",noneS:"Nothing new since the last check.",
+ chg:"Change detected",ops:"Check could not run",opsS:"We cannot say whether anything changed. This is not an all-clear.",
+ view:"View change details →",details:"Change details",was:"Was",now:"Now",decision:"What the agent decided",
+ hist:"History",listen:"▶ Listen (browser voice)",close:"Close",say:"Alert message",
+ own:"Confirmed as your own land",watch:"Extra evening re-check on",
+ sim:"SIMULATED",simTag:"Fictional data · Not an official record",fixTag:"Test fixture · Not an official record",
+ demoRun:"Demo run · No live portal check",
+ guard:["Read-only","Public fields only","No CAPTCHA bypass","Facts come only from the diff"],
+ foot:"Land Record Watch reads public information only, for land you confirm is your own. A change is not proof that something is wrong. Please check with your local land records office.",
+ types:{new_mutation:"New mutation entry",mutation_status_changed:"Mutation status",extent_changed:"Land extent",owner_changed:"Owner details"},
+ sev:{critical:"Critical",high:"High",medium:"Medium",ops:"Check failed"},
+ owner:"Owner details on the record changed (names are never stored in the clear)."},
+kn:{tag:"ನಿಮ್ಮ ಜಮೀನು. ನಿಮ್ಮ ದಾಖಲೆ. ನಿಮ್ಮ ಎಚ್ಚರಿಕೆ.",pill:"ನಿಗಾ ಪರಿಕಲ್ಪನೆ",hero:"ನಿಮ್ಮ ಭೂ ದಾಖಲೆ ಬದಲಾದಾಗ ತಿಳಿಯಿರಿ.",
+ sub:"ನಿಮ್ಮ ಸ್ವಂತ ಜಮೀನಿನ ಸಾರ್ವಜನಿಕ ದಾಖಲೆಯನ್ನು ನಾವು ಗಮನಿಸಿ, ಬದಲಾವಣೆ ಆದ ಕೂಡಲೇ ನಿಮ್ಮ ಭಾಷೆಯಲ್ಲಿ ತಿಳಿಸುತ್ತೇವೆ.",
+ mine:"ನೀವು ಗಮನಿಸುತ್ತಿರುವ ಜಮೀನು",last:"ಕೊನೆಯ ಪರಿಶೀಲನೆ",never:"ಇನ್ನೂ ಪರಿಶೀಲಿಸಿಲ್ಲ",src:"ಮೂಲ",
+ none:"ಬದಲಾವಣೆ ಕಂಡುಬಂದಿಲ್ಲ",noneS:"ಕೊನೆಯ ಪರಿಶೀಲನೆಯ ನಂತರ ಹೊಸದೇನೂ ಇಲ್ಲ.",
+ chg:"ಬದಲಾವಣೆ ಕಂಡುಬಂದಿದೆ",ops:"ಪರಿಶೀಲನೆ ನಡೆಯಲಿಲ್ಲ",opsS:"ಏನಾದರೂ ಬದಲಾಗಿದೆಯೇ ಎಂದು ಹೇಳಲಾಗದು. ಇದು ಎಲ್ಲ ಸರಿ ಎಂಬ ಸೂಚನೆ ಅಲ್ಲ.",
+ view:"ಬದಲಾವಣೆಯ ವಿವರ ನೋಡಿ →",details:"ಬದಲಾವಣೆಯ ವಿವರ",was:"ಹಿಂದೆ",now:"ಈಗ",decision:"ಏಜೆಂಟ್ ತೀರ್ಮಾನ",
+ hist:"ಇತಿಹಾಸ",listen:"▶ ಕೇಳಿ (ಬ್ರೌಸರ್ ಧ್ವನಿ)",close:"ಮುಚ್ಚಿ",say:"ಎಚ್ಚರಿಕೆ ಸಂದೇಶ",
+ own:"ನಿಮ್ಮ ಸ್ವಂತ ಜಮೀನು ಎಂದು ದೃಢಪಡಿಸಲಾಗಿದೆ",watch:"ಸಂಜೆ ಹೆಚ್ಚುವರಿ ಪರಿಶೀಲನೆ ಇದೆ",
+ sim:"ಅಣಕು",simTag:"ಕಾಲ್ಪನಿಕ ಮಾಹಿತಿ · ಅಧಿಕೃತ ದಾಖಲೆ ಅಲ್ಲ",fixTag:"ಪರೀಕ್ಷಾ ಮಾಹಿತಿ · ಅಧಿಕೃತ ದಾಖಲೆ ಅಲ್ಲ",
+ demoRun:"ಡೆಮೊ · ನೇರ ಪೋರ್ಟಲ್ ಪರಿಶೀಲನೆ ಇಲ್ಲ",
+ guard:["ಓದಲು ಮಾತ್ರ","ಸಾರ್ವಜನಿಕ ಮಾಹಿತಿ ಮಾತ್ರ","CAPTCHA ದಾಟುವುದಿಲ್ಲ","ಹೋಲಿಕೆಯ ಸತ್ಯಗಳು ಮಾತ್ರ"],
+ foot:"ಲ್ಯಾಂಡ್ ರೆಕಾರ್ಡ್ ವಾಚ್ ಸಾರ್ವಜನಿಕ ಮಾಹಿತಿಯನ್ನು ಮಾತ್ರ, ನೀವು ನಿಮ್ಮದೆಂದು ದೃಢಪಡಿಸಿದ ಜಮೀನಿಗೆ ಮಾತ್ರ ಓದುತ್ತದೆ. ಬದಲಾವಣೆ ಎಂದರೆ ತಪ್ಪಾಗಿದೆ ಎಂದಲ್ಲ. ದಯವಿಟ್ಟು ಸ್ಥಳೀಯ ಭೂ ದಾಖಲೆ ಕಚೇರಿಯಲ್ಲಿ ವಿಚಾರಿಸಿ.",
+ types:{new_mutation:"ಹೊಸ ಮ್ಯುಟೇಶನ್ ನಮೂದು",mutation_status_changed:"ಮ್ಯುಟೇಶನ್ ಸ್ಥಿತಿ",extent_changed:"ಜಮೀನಿನ ವಿಸ್ತೀರ್ಣ",owner_changed:"ಮಾಲೀಕರ ವಿವರ"},
+ sev:{critical:"ತುರ್ತು",high:"ಹೆಚ್ಚು",medium:"ಮಧ್ಯಮ",ops:"ಪರಿಶೀಲನೆ ವಿಫಲ"},
+ owner:"ದಾಖಲೆಯಲ್ಲಿ ಮಾಲೀಕರ ವಿವರ ಬದಲಾಗಿದೆ."},
+hi:{tag:"आपकी जमीन। आपके रिकॉर्ड। आपके अलर्ट।",pill:"निगरानी अवधारणा",hero:"जानिए जब आपका भूमि रिकॉर्ड बदले।",
+ sub:"हम आपकी अपनी जमीन का सार्वजनिक रिकॉर्ड देखते हैं और बदलाव होते ही आपकी भाषा में बताते हैं।",
+ mine:"आपकी निगरानी वाली जमीन",last:"आखिरी जांच",never:"अभी जांच नहीं हुई",src:"स्रोत",
+ none:"कोई बदलाव नहीं मिला",noneS:"पिछली जांच के बाद कुछ नया नहीं।",
+ chg:"बदलाव मिला",ops:"जांच नहीं हो सकी",opsS:"हम नहीं कह सकते कि कुछ बदला या नहीं। यह सब ठीक होने का संकेत नहीं है।",
+ view:"बदलाव का विवरण देखें →",details:"बदलाव का विवरण",was:"पहले",now:"अब",decision:"एजेंट का फैसला",
+ hist:"इतिहास",listen:"▶ सुनें (ब्राउज़र आवाज़)",close:"बंद करें",say:"अलर्ट संदेश",
+ own:"आपकी अपनी जमीन के रूप में पुष्ट",watch:"शाम को अतिरिक्त जांच चालू",
+ sim:"नकली",simTag:"काल्पनिक डेटा · आधिकारिक रिकॉर्ड नहीं",fixTag:"टेस्ट डेटा · आधिकारिक रिकॉर्ड नहीं",
+ demoRun:"डेमो · लाइव पोर्टल जांच नहीं",
+ guard:["सिर्फ पढ़ना","सिर्फ सार्वजनिक जानकारी","CAPTCHA पार नहीं","सिर्फ अंतर के तथ्य"],
+ foot:"Land Record Watch केवल सार्वजनिक जानकारी पढ़ता है, उसी जमीन के लिए जिसे आप अपनी पुष्टि करते हैं। बदलाव का मतलब गलती नहीं है। कृपया स्थानीय भूमि रिकॉर्ड कार्यालय में जांच करें।",
+ types:{new_mutation:"नई म्यूटेशन एंट्री",mutation_status_changed:"म्यूटेशन स्थिति",extent_changed:"जमीन का क्षेत्रफल",owner_changed:"मालिक का विवरण"},
+ sev:{critical:"गंभीर",high:"उच्च",medium:"मध्यम",ops:"जांच विफल"},
+ owner:"रिकॉर्ड में मालिक का विवरण बदला है।"}
+};
+const VOICE={en:"en-IN",kn:"kn-IN",hi:"hi-IN"};
+let lang="en", DATA=null;
+try{lang=localStorage.getItem("lrw-lang")||"en"}catch(e){}
+
+// Used ONLY when the real agent database is not reachable (e.g. static hosting). Always labelled SIMULATED.
+const DEMO={demo:true,parcels:[{id:0,label:"KA-DEMO-001",place:"",survey:"",language:"kn",confirmed_own:true,watch_closely:true,last_check:null,source:null,
+ alerts:[{id:1,at:null,severity:"medium",decision:"rules: medium severity, no model needed",
+  changes:[{type:"mutation_status_changed",id:"MR-1001",old:"Pending",new:"Recorded"}],
+  messages:{en:"Alert for KA-DEMO-001: the public land record changed. Mutation entry MR-1001 changed from Pending to Recorded. This does not prove anything is wrong. Please check with your local land records office.",
+   kn:"KA-DEMO-001 ಜಮೀನಿನ ಸಾರ್ವಜನಿಕ ಭೂ ದಾಖಲೆಯಲ್ಲಿ ಬದಲಾವಣೆ ಕಂಡುಬಂದಿದೆ. ಮ್ಯುಟೇಶನ್ ನಮೂದು MR-1001 Pending ಇಂದ Recorded ಗೆ ಬದಲಾಗಿದೆ. ಇದರಿಂದ ಏನೋ ತಪ್ಪಾಗಿದೆ ಎಂದು ಅರ್ಥವಲ್ಲ. ದಯವಿಟ್ಟು ನಿಮ್ಮ ಸ್ಥಳೀಯ ಭೂ ದಾಖಲೆ ಕಚೇರಿಯಲ್ಲಿ ವಿಚಾರಿಸಿ.",
+   hi:"KA-DEMO-001 की जमीन के सार्वजनिक भूमि रिकॉर्ड में बदलाव मिला है। म्यूटेशन एंट्री MR-1001 Pending से Recorded में बदली है। इसका मतलब यह नहीं कि कुछ गलत है। कृपया अपने स्थानीय भूमि रिकॉर्ड कार्यालय में जांच करें।"}}]}]};
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt=ts=>ts?new Date(ts*1000).toLocaleString(lang==="en"?"en-IN":lang+"-IN",{dateStyle:"medium",timeStyle:"short"}):null;
+
+function sketch(){return `<svg viewBox="0 0 400 104" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+<defs><pattern id="g" width="22" height="22" patternUnits="userSpaceOnUse"><path d="M22 0H0V22" fill="none" stroke="var(--mint-2)" stroke-width="1"/></pattern></defs>
+<rect width="400" height="104" fill="url(#g)"/>
+<path d="M120 78 L170 22 L282 30 L300 80 Z" fill="var(--green-2)" fill-opacity=".22" stroke="var(--green)" stroke-width="2" stroke-dasharray="6 4"/>
+<circle cx="170" cy="22" r="4" fill="var(--green)"/><circle cx="282" cy="30" r="4" fill="var(--green)"/><circle cx="300" cy="80" r="4" fill="var(--green)"/><circle cx="120" cy="78" r="4" fill="var(--green)"/>
+<g transform="translate(205,46)"><circle r="13" fill="var(--green)"/><path d="M-5 0l3.5 3.5L6 -3.5" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g></svg>`}
+
+function render(){
+  const t=T[lang];
+  document.documentElement.lang=lang;
+  document.querySelectorAll("[data-t]").forEach(e=>e.textContent=t[e.dataset.t]);
+  document.querySelectorAll(".seg button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l===lang));
+  const html=DATA.parcels.map((p,i)=>{
+    const a=p.alerts[0], sev=a?a.severity:"none";
+    const demo=DATA.demo, tag=demo?t.simTag:t.fixTag;
+    const title=!a?t.none:(sev==="ops"?t.ops:t.chg);
+    const body=!a?t.noneS:(sev==="ops"?t.opsS:a.changes.map(c=>summ(c,t)).join(" "));
+    const last=demo?`${t.demoRun} <span class="tag sim">${t.sim}</span>`:(fmt(p.last_check)||t.never);
+    return `<article class="card">
+      <div class="sketch">${sketch()}</div>
+      <div class="pad"><p class="eyebrow">${t.mine}</p>
+        <div class="pid"><b>${esc(p.label)}</b><span class="tag ${demo?"sim":""}">${tag}</span></div>
+        ${p.place||p.survey?`<p class="meta">${esc(p.place)}${p.survey?" · Sy. "+esc(p.survey):""}</p>`:""}
+        <div class="guard">${t.guard.map(g=>`<span>${g}</span>`).join("")}</div></div>
+      <div class="row"><span>${t.last}</span><span>${last}</span></div>
+      ${p.confirmed_own?`<div class="row"><span>✓</span><span>${t.own}${p.watch_closely?" · "+t.watch:""}</span></div>`:""}
+      <div style="height:16px"></div>
+      <div class="status s-${sev==="low"?"medium":sev}"><div class="dot">${!a?"✓":sev==="ops"?"!":"Δ"}</div><div><h3>${title}</h3><p>${esc(body)}</p></div></div>
+      ${a?`<button class="btn" data-open="${i}">${t.view}</button>`:""}
+    </article>`}).join("");
+  $("#parcels").innerHTML=html;
+  document.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>openSheet(+b.dataset.open));
+  if($("#sheet").classList.contains("open"))openSheet(cur);
+}
+function summ(c,t){const n=t.types[c.type];
+  if(c.type==="owner_changed")return t.owner;
+  if(c.type==="new_mutation")return `${n}: ${c.id} (${c.status}).`;
+  return `${n} ${c.id?c.id+": ":""}${c.old} → ${c.new}.`}
+function prettyDecision(d){try{const j=JSON.parse(d);return [j.action,j.recheck?"re-check this evening":null,j.source?"by "+j.source:null,j.reason].filter(Boolean).join(" · ")}catch(e){return d||"—"}}
+let cur=0;
+function openSheet(i){
+  cur=i;const t=T[lang],p=DATA.parcels[i],a=p.alerts[0];
+  const rows=a.changes.map(c=>c.type==="owner_changed"
+    ?`<div class="msg">${t.owner}</div>`
+    :c.type==="new_mutation"
+    ?`<div class="diff"><div class="b"><small>${t.was}</small>—</div><div>→</div><div class="b new"><small>${t.types[c.type]}</small>${esc(c.id)} · ${esc(c.status)} · ${esc(c.date||"")}</div></div>`
+    :`<div class="diff"><div class="b"><small>${t.types[c.type]}${c.id?" · "+esc(c.id):""} · ${t.was}</small>${esc(c.old)}</div><div>→</div><div class="b new"><small>${t.now}</small>${esc(c.new)}</div></div>`).join("");
+  const hist=p.alerts.map(x=>`<li><b>${t.sev[x.severity]||x.severity}</b> — ${esc(x.changes.map(c=>t.types[c.type]).join(", ")||t.ops)}<small>${fmt(x.at)||t.sim}</small></li>`).join("");
+  $("#panel").innerHTML=`<button class="icon close" id="x" aria-label="${t.close}">✕</button>
+   <span class="chip c-${a.severity}">${t.sev[a.severity]||a.severity}</span>
+   <h3>${t.details}</h3>${rows}
+   <p class="eyebrow" style="margin-top:18px">${t.say}</p>
+   <div class="msg" lang="${lang}">${esc(a.messages[lang])}</div>
+   <button class="listen" id="say">${t.listen}</button>
+   <p class="eyebrow" style="margin-top:20px">${t.decision}</p>
+   <div class="msg">${esc(prettyDecision(a.decision))}</div>
+   <p class="eyebrow" style="margin-top:20px">${t.hist}</p><ol class="tl">${hist}</ol>
+   <p class="note">${t.foot}</p>`;
+  $("#sheet").classList.add("open");
+  $("#x").onclick=closeSheet; $("#x").focus();
+  $("#say").onclick=()=>{try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(a.messages[lang]);u.lang=VOICE[lang];speechSynthesis.speak(u)}catch(e){}};
+}
+function closeSheet(){$("#sheet").classList.remove("open");try{speechSynthesis.cancel()}catch(e){}}
+$("#sheet").onclick=e=>{if(e.target.id==="sheet")closeSheet()};
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet()});
+document.querySelectorAll(".seg button").forEach(b=>b.onclick=()=>{lang=b.dataset.l;try{localStorage.setItem("lrw-lang",lang)}catch(e){}render()});
+$("#theme").onclick=()=>{const r=document.documentElement,d=getComputedStyle(r).getPropertyValue("--bg").trim()==="#0d1711";r.dataset.theme=d?"light":"dark"};
+
+fetch("/api/state").then(r=>r.ok?r.json():Promise.reject()).then(d=>{DATA=d.parcels.length?d:DEMO}).catch(()=>{DATA=DEMO}).finally(render);
+</script>
+</body>
+</html>

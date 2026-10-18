@@ -2,6 +2,7 @@
 Runs against the local test pages in dev mode (no Browserbase, no Telegram, no VerbX).
 For the submission, re-run the same scenarios with DEV_NO_BROWSER=0 so each one goes
 through a real Browserbase session, and attach the replay links as evidence."""
+import json
 import os
 import tempfile
 import time
@@ -43,7 +44,7 @@ def fresh_parcel(confirmed=True):
 
 def main():
     rows = ["# Test evidence", "",
-            "Local run on labelled test pages. Not a live Browserbase run.", "",
+            "## Automated runs (local, labelled test pages)", "", "No Browserbase, Telegram or VerbX calls in this section; see the live runs below.", "",
             "| Scenario | Pages read in order | Expected | Actual | Result |",
             "|---|---|---|---|---|"]
     for name, pages, expected in CASES:
@@ -57,6 +58,16 @@ def main():
     actual = check_parcel(db, parcel, "before")
     rows.append(f"| 9 Parcel not confirmed as own | before | skipped | {actual} | "
                 f"{'PASS' if actual == 'skipped' else 'FAIL'} |")
+    start = rows.index("|---|---|---|---|---|") + 1
+    rows[start:] = sorted(rows[start:], key=lambda r: int(r.split()[1]))
+    live = Path("docs/live-runs.json")
+    if live.exists():
+        rows += ["", "## Live runs through Browserbase (18 Oct 2026, region ap-southeast-1)", "",
+                 "Each row is one real cloud-browser session reading the labelled test pages on GitHub Pages.",
+                 "Replays are in the Browserbase dashboard (private link, so screenshots are attached to the submission).", "",
+                 "| Scenario | Page | Expected | Actual | Browserbase session |", "|---|---|---|---|---|"]
+        for r in json.loads(live.read_text(encoding="utf-8")):
+            rows.append(f"| {r['scenario']} | {r['page']} | {r['expected']} | {r['actual']} | `{r['session']}` |")
     out = Path("docs/test-evidence.md")
     out.parent.mkdir(exist_ok=True)
     out.write_text("\n".join(rows) + "\n", encoding="utf-8")

@@ -72,3 +72,8 @@ instead of calling Telegram and VerbX. Turn both off for the demo and the submis
 
 ## Test evidence
 See `docs/test-evidence.md`, and add the Browserbase replay links per scenario.
+
+
+## Web UI
+
+`python -m src.server` then open http://localhost:8000. Read-only view of the real database (parcel, last check, latest alert, history) in English, Kannada and Hindi. Without a database it shows a clearly labelled SIMULATED demo. The "Listen" button uses the browser's own voice, not VerbX.
