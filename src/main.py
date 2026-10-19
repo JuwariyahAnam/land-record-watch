@@ -18,10 +18,15 @@ from .verbx_client import speak
 
 
 def alert(db, parcel, severity, diff_json, message, decision=""):
-    db.execute("INSERT INTO alerts(parcel_id, created_at, severity, diff, message, decision) VALUES (?,?,?,?,?,?)",
-               (parcel["id"], time.time(), severity, diff_json, message, decision))
+    cur = db.execute("INSERT INTO alerts(parcel_id, created_at, severity, diff, message, decision) VALUES (?,?,?,?,?,?)",
+                     (parcel["id"], time.time(), severity, diff_json, message, decision))
     db.commit()
-    send_text(parcel["chat_id"], message)
+    try:
+        send_text(parcel["chat_id"], message)
+    except Exception:
+        db.execute("DELETE FROM alerts WHERE id=?", (cur.lastrowid,))  # it was never delivered
+        db.commit()
+        raise
     if os.environ.get("DRY_RUN") == "1":
         print("[dry run] voice skipped")
         return
@@ -59,10 +64,11 @@ def check_parcel(db, parcel, scenario="before"):
         return ops_alert(db, parcel)
 
     new = summarize(rec)
+    snap_id = None
     last = db.execute("SELECT summary FROM snapshots WHERE parcel_id=? ORDER BY id DESC LIMIT 1",
                       (parcel["id"],)).fetchone()
-    db.execute("INSERT INTO snapshots(parcel_id, fetched_at, source, fingerprint, summary) VALUES (?,?,?,?,?)",
-               (parcel["id"], time.time(), source.name, fingerprint(new), json.dumps(new)))
+    snap_id = db.execute("INSERT INTO snapshots(parcel_id, fetched_at, source, fingerprint, summary) VALUES (?,?,?,?,?)",
+                         (parcel["id"], time.time(), source.name, fingerprint(new), json.dumps(new))).lastrowid
     # Agent decision: a pending mutation means check again in the evening.
     db.execute("UPDATE parcels SET watch_closely=? WHERE id=?",
                (1 if has_pending(new) else 0, parcel["id"]))
@@ -83,7 +89,14 @@ def check_parcel(db, parcel, scenario="before"):
     print(f"decision ({d['source']}): {d['action']} - {d['reason']}")
     db.execute("UPDATE parcels SET watch_closely=? WHERE id=?", (1 if d["recheck"] else 0, parcel["id"]))
     db.commit()
-    alert(db, parcel, severity, json.dumps(changes), message, json.dumps(d, ensure_ascii=False))
+    try:
+        alert(db, parcel, severity, json.dumps(changes), message, json.dumps(d, ensure_ascii=False))
+    except Exception as e:
+        # Delivery failed: forget this snapshot so the next run sees the change again and retries.
+        db.execute("DELETE FROM snapshots WHERE id=?", (snap_id,))
+        db.commit()
+        print("alert NOT delivered, will retry on the next check:", e)
+        return "send-failed"
     return f"alert:{severity}"
 
 

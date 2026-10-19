@@ -118,6 +118,8 @@ ol.tl small{color:var(--muted);display:block}
   .panel{max-width:640px;border-radius:26px;max-height:88vh}
   .note{text-align:center;max-width:640px;margin:40px auto 0}
 }
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--green);color:var(--card);padding:12px 18px;border-radius:999px;font-size:14px;opacity:0;pointer-events:none;transition:.25s;z-index:9;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%)}
 </style>
 </head>
 <body>
@@ -144,6 +146,7 @@ ol.tl small{color:var(--muted);display:block}
   <p class="note" data-t="foot"></p>
 </div>
 
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Change details"><div class="panel" id="panel"></div></div>
 
 <script>
@@ -194,6 +197,10 @@ hi:{tag:"आपकी जमीन। आपके रिकॉर्ड। आ�
  sev:{critical:"गंभीर",high:"उच्च",medium:"मध्यम",ops:"जांच विफल"},
  owner:"रिकॉर्ड में मालिक का विवरण बदला है।"}
 };
+T.en.alang="Alert language";T.kn.alang="ಎಚ್ಚರಿಕೆಯ ಭಾಷೆ";T.hi.alang="अलर्ट की भाषा";
+T.en.saved="Alerts will now be sent in English.";T.kn.saved="ಇನ್ನು ಮುಂದೆ ಎಚ್ಚರಿಕೆಗಳು ಕನ್ನಡದಲ್ಲಿ ಬರುತ್ತವೆ.";T.hi.saved="अब अलर्ट हिंदी में भेजे जाएंगे।";
+T.en.failed="Could not save the language. Is the server running?";T.kn.failed="ಭಾಷೆ ಉಳಿಸಲು ಆಗಲಿಲ್ಲ. ಸರ್ವರ್ ಚಾಲನೆಯಲ್ಲಿದೆಯೇ?";T.hi.failed="भाषा सेव नहीं हो सकी। क्या सर्वर चल रहा है?";
+const LNAME={en:"English",kn:"ಕನ್ನಡ",hi:"हिंदी"};
 const VOICE={en:"en-IN",kn:"kn-IN",hi:"hi-IN"};
 let lang="en", DATA=null;
 try{lang=localStorage.getItem("lrw-lang")||"en"}catch(e){}
@@ -235,6 +242,7 @@ function render(){
         ${p.place||p.survey?`<p class="meta">${esc(p.place)}${p.survey?" · Sy. "+esc(p.survey):""}</p>`:""}
         <div class="guard">${t.guard.map(g=>`<span>${g}</span>`).join("")}</div></div>
       <div class="row"><span>${t.last}</span><span>${last}</span></div>
+      ${demo?"":`<div class="row"><span>${t.alang}</span><span>${LNAME[p.language]||p.language}</span></div>`}
       ${p.confirmed_own?`<div class="row"><span>✓</span><span>${t.own}${p.watch_closely?" · "+t.watch:""}</span></div>`:""}
       <div style="height:16px"></div>
       <div class="status s-${sev==="low"?"medium":sev}"><div class="dot">${!a?"✓":sev==="ops"?"!":"Δ"}</div><div><h3>${title}</h3><p>${esc(body)}</p></div></div>
@@ -275,10 +283,20 @@ function openSheet(i){
 function closeSheet(){$("#sheet").classList.remove("open");try{speechSynthesis.cancel()}catch(e){}}
 $("#sheet").onclick=e=>{if(e.target.id==="sheet")closeSheet()};
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet()});
-document.querySelectorAll(".seg button").forEach(b=>b.onclick=()=>{lang=b.dataset.l;try{localStorage.setItem("lrw-lang",lang)}catch(e){}render()});
+function toast(msg){const e=$("#toast");e.textContent=msg;e.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove("show"),3200)}
+document.querySelectorAll(".seg button").forEach(b=>b.onclick=()=>{
+  lang=b.dataset.l;try{localStorage.setItem("lrw-lang",lang)}catch(e){}
+  render();
+  if(DATA&&!DATA.demo){ // the language you pick here is the language alerts are sent in
+    fetch("/api/language",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({language:lang})})
+      .then(r=>r.ok?r.json():Promise.reject())
+      .then(()=>{DATA.parcels.forEach(p=>p.language=lang);render();toast(T[lang].saved)})
+      .catch(()=>toast(T[lang].failed));
+  }
+});
 $("#theme").onclick=()=>{const r=document.documentElement,d=getComputedStyle(r).getPropertyValue("--bg").trim()==="#0d1711";r.dataset.theme=d?"light":"dark"};
 
-fetch("/api/state").then(r=>r.ok?r.json():Promise.reject()).then(d=>{DATA=d.parcels.length?d:DEMO}).catch(()=>{DATA=DEMO}).finally(render);
+fetch("/api/state").then(r=>r.ok?r.json():Promise.reject()).then(d=>{DATA=d.parcels.length?d:DEMO;if(!DATA.demo&&DATA.parcels[0].language)lang=DATA.parcels[0].language}).catch(()=>{DATA=DEMO}).finally(render);
 </script>
 </body>
 </html>

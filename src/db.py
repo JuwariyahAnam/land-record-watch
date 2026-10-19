@@ -22,8 +22,10 @@ def conn():
         id INTEGER PRIMARY KEY, parcel_id INTEGER, created_at REAL,
         severity TEXT, diff TEXT, message TEXT, decision TEXT);
     """)
-    try:
-        c.execute("ALTER TABLE alerts ADD COLUMN decision TEXT")
-    except sqlite3.OperationalError:
-        pass  # column already exists
+    for ddl in ("ALTER TABLE alerts ADD COLUMN decision TEXT",
+                "ALTER TABLE parcels ADD COLUMN source_ref TEXT"):
+        try:
+            c.execute(ddl)
+        except sqlite3.OperationalError:
+            pass  # column already exists
     return c

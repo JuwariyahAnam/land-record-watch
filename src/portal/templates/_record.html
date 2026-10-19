@@ -1,0 +1,18 @@
+<dl class="kv">
+  <dt>Place</dt><dd>{{ r.village }}, {{ r.hobli }}, {{ r.taluk }}, {{ r.district }}</dd>
+  <dt>Survey / surnoc / hissa</dt><dd>{{ r.survey }}</dd>
+  <dt>Owner</dt><dd data-field="owner">{{ r.owner_display }}</dd>
+  <dt>Extent (acres-guntas)</dt><dd data-field="extent">{{ r.extent }}</dd>
+  <dt>Last updated</dt><dd>{{ ts(r.updated_at) }}</dd>
+</dl>
+<div class="status {{ r.status }}"><b>{% if r.status == 'pending' %}{{ r.pending }} mutation{{ 's' if r.pending != 1 }} pending{% else %}No pending mutations{% endif %}</b>
+{% if r.status == 'pending' %}This record may change when the registrar decides.{% else %}Nothing is waiting for a decision on this record.{% endif %}</div>
+<h2 class="h-sm">Mutation history</h2>
+{% if r.mutations %}
+<table>
+  <tr><th>Reference</th><th>Date</th><th>Status</th><th>Type</th></tr>
+  {% for m in r.mutations %}
+  <tr data-mutation="{{ m.ref }}"><td>{{ m.ref }}</td><td data-field="date">{{ m.filed_on }}</td><td data-field="status">{{ m.status }}</td><td>{{ m.kind }}</td></tr>
+  {% endfor %}
+</table>
+{% else %}<p class="meta">No mutations on this record yet.</p>{% endif %}

@@ -5,3 +5,5 @@ requests
 apscheduler
 beautifulsoup4
 pytest
+flask
+gunicorn; sys_platform != "win32"

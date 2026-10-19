@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}My lands{% endblock %}
+{% block body %}
+<h1>My lands</h1>
+<div class="row"><a class="btn" href="{{ url_for('land_new') }}">Register land</a></div>
+{% if lands %}
+<div class="grid mt20">
+{% for r in lands %}
+  <a class="card card-link" href="{{ url_for('land_detail', land_id=r.id) }}">
+    <span class="chip {{ r.status }}">{{ 'Mutation pending' if r.status == 'pending' else 'No pending changes' }}</span>
+    <h2 class="mt12">{{ r.village }} · Sy. {{ r.survey }}</h2>
+    <p class="meta">{{ r.taluk }}, {{ r.district }} · extent {{ r.extent }}</p>
+  </a>
+{% endfor %}
+</div>
+{% else %}<p class="lead mt20">You have not registered any land yet. Register a parcel to start.</p>{% endif %}
+{% endblock %}

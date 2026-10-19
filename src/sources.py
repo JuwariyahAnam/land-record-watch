@@ -73,5 +73,31 @@ class LiveSource:
         return with_page(run)
 
 
+class PortalSource:
+    """The demo registry we built. Reads the owner's private watch link for the parcel.
+    Only links on the configured PORTAL_BASE are ever opened."""
+    name = "portal"
+
+    def fetch(self, parcel):
+        url = (parcel["source_ref"] or "").strip()
+        base = os.environ.get("PORTAL_BASE", "").rstrip("/")
+        if not url or not base or not url.startswith(base + "/public/"):
+            raise LayoutChanged("portal link missing, or not on the configured portal")
+        if os.environ.get("DEV_NO_BROWSER") == "1":
+            import requests
+            r = requests.get(url, timeout=20)
+            r.raise_for_status()
+            html = r.text
+            check_captcha(html)
+        else:
+            html = fetch_html(url)
+        return parse_fixture(html)
+
+
 def get_source(scenario="before"):
-    return LiveSource() if os.environ.get("SOURCE") == "live" else FixtureSource(scenario)
+    kind = os.environ.get("SOURCE")
+    if kind == "live":
+        return LiveSource()
+    if kind == "portal":
+        return PortalSource()
+    return FixtureSource(scenario)

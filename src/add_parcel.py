@@ -12,11 +12,12 @@ if __name__ == "__main__":
     values = {f: input(f"{f}: ").strip() for f in FIELDS}
     lang = input("language (kn, hi, en) [kn]: ").strip() or "kn"
     chat_id = input("telegram chat id: ").strip()
+    source_ref = input("registry watch link (leave empty to use the test pages): ").strip()
     if input("Is this your own land? type yes: ").strip().lower() != "yes":
         raise SystemExit("not added")
     db = conn()
     db.execute("""INSERT INTO parcels(label, district, taluk, hobli, village, survey_no, surnoc, hissa,
-                  language, chat_id, own_land_confirmed_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
-               (*[values[f] for f in FIELDS], lang, chat_id, time.time()))
+                  language, chat_id, own_land_confirmed_at, source_ref) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
+               (*[values[f] for f in FIELDS], lang, chat_id, time.time(), source_ref or None))
     db.commit()
     print("added")

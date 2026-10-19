@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}First-time setup{% endblock %}
+{% block body %}
+<div class="narrow">
+<h1>Create the registrar account</h1>
+<p class="meta">One-time setup. The registrar is demo staff who approve or reject land changes. This page disappears once the account exists.</p>
+<form class="card mt16" method="post" autocomplete="on">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  {% if need_code %}<label for="code">Setup code</label><input id="code" name="code" type="password" required autocomplete="off">{% endif %}
+  <label for="name">Name</label><input id="name" name="name" value="{{ form.get('name','') }}" required maxlength="60">
+  <label for="email">Email</label><input id="email" name="email" type="email" value="{{ form.get('email','') }}" required maxlength="120">
+  <label for="password">Password</label><input id="password" name="password" type="password" required minlength="10" autocomplete="new-password">
+  <p class="meta">At least 10 characters, with letters and numbers.</p>
+  <label for="confirm">Repeat password</label><input id="confirm" name="confirm" type="password" required minlength="10" autocomplete="new-password">
+  <div class="row"><button class="btn" type="submit">Create registrar</button></div>
+</form>
+</div>
+{% endblock %}

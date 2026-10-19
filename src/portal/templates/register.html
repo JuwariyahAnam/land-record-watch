@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Create account{% endblock %}
+{% block body %}
+<div class="narrow">
+<h1>Create {{ role }} account</h1>
+<p class="meta">This is a demo. Use made-up names and details. Your password is stored hashed and is never shown.</p>
+<div class="row"><a class="btn {{ '' if role=='landlord' else 'ghost' }}" href="{{ url_for('register', role='landlord') }}">Landlord</a><a class="btn {{ '' if role=='buyer' else 'ghost' }}" href="{{ url_for('register', role='buyer') }}">Buyer</a></div>
+<form class="card mt16" method="post" autocomplete="on">
+  <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="role" value="{{ role }}">
+  <label for="name">Full name</label><input id="name" name="name" value="{{ form.get('name','') }}" required maxlength="60" autocomplete="name">
+  <label for="email">Email</label><input id="email" name="email" type="email" value="{{ form.get('email','') }}" required maxlength="120" autocomplete="email">
+  <label for="password">Password</label><input id="password" name="password" type="password" required minlength="10" autocomplete="new-password">
+  <p class="meta">At least 10 characters, with letters and numbers.</p>
+  <label for="confirm">Repeat password</label><input id="confirm" name="confirm" type="password" required minlength="10" autocomplete="new-password">
+  <div class="row"><button class="btn" type="submit">Create account</button></div>
+</form>
+<p class="meta">Already registered? <a href="{{ url_for('login', role=role) }}">Log in</a></p>
+</div>
+{% endblock %}

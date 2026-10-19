@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Register land{% endblock %}
+{% block body %}
+<div class="narrow-lg">
+<h1>Register land</h1>
+<p class="meta">Public identifiers only. No documents are uploaded. Use made-up details in this demo.</p>
+<form class="card mt16" method="post">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <div class="cols">
+    <div><label for="district">District</label><input id="district" name="district" value="{{ form.get('district','') }}" required maxlength="60"></div>
+    <div><label for="taluk">Taluk</label><input id="taluk" name="taluk" value="{{ form.get('taluk','') }}" required maxlength="60"></div>
+    <div><label for="hobli">Hobli</label><input id="hobli" name="hobli" value="{{ form.get('hobli','') }}" required maxlength="60"></div>
+    <div><label for="village">Village</label><input id="village" name="village" value="{{ form.get('village','') }}" required maxlength="60"></div>
+    <div><label for="survey_no">Survey number</label><input id="survey_no" name="survey_no" value="{{ form.get('survey_no','') }}" required maxlength="20"></div>
+    <div><label for="surnoc">Surnoc</label><input id="surnoc" name="surnoc" value="{{ form.get('surnoc','*') }}" maxlength="20"></div>
+    <div><label for="hissa">Hissa</label><input id="hissa" name="hissa" value="{{ form.get('hissa','1') }}" maxlength="20"></div>
+    <div><label for="extent">Extent (acres-guntas)</label><input id="extent" name="extent" value="{{ form.get('extent','') }}" placeholder="2-10" required maxlength="6"></div>
+  </div>
+  <label for="owner_name">Owner name on the record</label>
+  <input id="owner_name" name="owner_name" value="{{ form.get('owner_name', user.name) }}" required maxlength="60">
+  <label class="check"><input type="checkbox" name="own" value="yes" required> I confirm this land belongs to me or my family.</label>
+  <div class="row"><button class="btn" type="submit">Register land</button><a class="btn ghost" href="{{ url_for('dashboard') }}">Cancel</a></div>
+</form>
+</div>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Who are you?</h1>
+<p class="lead">Choose how you want to use the demo registry. A landlord registers land and files changes. A buyer searches and sees the status of a record.</p>
+<div class="grid mt24">
+  <section class="card">
+    <h2>I am a landlord</h2>
+    <p class="meta">Register your land with its survey details, file a mutation request, and get a private watch link for Land Record Watch alerts.</p>
+    <div class="row"><a class="btn" href="{{ url_for('register', role='landlord') }}">Create landlord account</a><a class="btn ghost" href="{{ url_for('login', role='landlord') }}">Log in</a></div>
+  </section>
+  <section class="card">
+    <h2>I am a buyer</h2>
+    <p class="meta">Search by district, taluk, village and survey number to see the extent, the status of mutations and the history of a record.</p>
+    <div class="row"><a class="btn" href="{{ url_for('register', role='buyer') }}">Create buyer account</a><a class="btn ghost" href="{{ url_for('login', role='buyer') }}">Log in</a></div>
+  </section>
+</div>
+{% if no_registrar %}<p class="meta mt20"><a href="{{ url_for('setup') }}">First time? Create the registrar account</a>.</p>{% endif %}
+<p class="meta mt20">Registrar (demo staff who approve changes)? <a href="{{ url_for('login', role='registrar') }}">Log in here</a>.</p>
+{% endblock %}

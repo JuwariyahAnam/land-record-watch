@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}My land{% endblock %}
+{% block body %}
+<p><a href="{{ url_for('dashboard') }}">← My lands</a></p>
+<h1>{{ r.village }} · Sy. {{ r.survey }}</h1>
+<div class="split">
+  <section class="card">{% include "_record.html" %}</section>
+  <div>
+    <section class="card">
+      <h2>File a mutation</h2>
+      <p class="meta">A mutation stays Pending until the registrar approves or rejects it.</p>
+      <form method="post" action="{{ url_for('mutation_file', land_id=land.id) }}">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <label for="kind">Type</label>
+        <select id="kind" name="kind">{% for k in kinds %}<option>{{ k }}</option>{% endfor %}</select>
+        <label for="note">Note (optional)</label><input id="note" name="note" maxlength="200">
+        <div class="row"><button class="btn" type="submit">File mutation</button></div>
+      </form>
+    </section>
+    <section class="card mt20">
+      <h2>Alerts link</h2>
+      <p class="meta">Give this private link to Land Record Watch so it can check this record. It shows a masked owner name. Anyone who has it can view the record, so keep it private.</p>
+      <p class="mono">{{ watch_url }}</p>
+    </section>
+    <section class="card mt20">
+      <h2>History</h2>
+      <ol class="tl">{% for e in events %}<li>{{ e.text }}<br><span class="meta">{{ ts(e.at) }} · {{ e.actor }}</span></li>{% endfor %}</ol>
+    </section>
+  </div>
+</div>
+{% endblock %}

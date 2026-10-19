@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Search{% endblock %}
+{% block body %}
+<h1>Search a record</h1>
+<p class="lead">Enter at least the district and the survey number. Add more details to narrow the search.</p>
+<form class="card mt16" method="get">
+  <div class="cols">
+    <div><label for="district">District *</label><input id="district" name="district" value="{{ q.district }}" maxlength="60"></div>
+    <div><label for="taluk">Taluk</label><input id="taluk" name="taluk" value="{{ q.taluk }}" maxlength="60"></div>
+    <div><label for="hobli">Hobli</label><input id="hobli" name="hobli" value="{{ q.hobli }}" maxlength="60"></div>
+    <div><label for="village">Village</label><input id="village" name="village" value="{{ q.village }}" maxlength="60"></div>
+    <div><label for="survey_no">Survey number *</label><input id="survey_no" name="survey_no" value="{{ q.survey_no }}" maxlength="20"></div>
+    <div><label for="hissa">Hissa</label><input id="hissa" name="hissa" value="{{ q.hissa }}" maxlength="20"></div>
+  </div>
+  <div class="row"><button class="btn" type="submit">Search</button></div>
+</form>
+{% if searched and results %}
+  <h2 class="mt28">{{ results|length }} result{{ 's' if results|length != 1 }}</h2>
+  <div class="grid">
+  {% for r in results %}
+    <a class="card card-link" href="{{ url_for('record', land_id=r.id) }}">
+      <span class="chip {{ r.status }}">{{ 'Mutation pending' if r.status == 'pending' else 'No pending changes' }}</span>
+      <h2 class="mt12">{{ r.village }} · Sy. {{ r.survey }}</h2>
+      <p class="meta">{{ r.taluk }}, {{ r.district }} · extent {{ r.extent }}</p>
+    </a>
+  {% endfor %}
+  </div>
+{% elif searched and not get_flashed_messages() %}
+  <p class="meta mt24">No record found. Check the spelling and the survey number.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Pending queue{% endblock %}
+{% block body %}
+<h1>Pending mutations</h1>
+<p class="meta">Demo staff view. Approve or reject each request.</p>
+{% if queue %}
+<section class="card mt16">
+<table>
+  <tr><th>Ref</th><th>Land</th><th>Type</th><th>Filed</th><th></th></tr>
+  {% for m in queue %}
+  <tr><td>{{ m.ref }}</td><td>{{ m.village }} · Sy. {{ m.survey_no }}/{{ m.hissa }}, {{ m.district }}</td><td>{{ m.kind }}</td><td>{{ m.filed_on }}</td>
+  <td><a class="btn ghost" href="{{ url_for('registrar_land', land_id=m.land_id) }}">Review</a></td></tr>
+  {% endfor %}
+</table>
+</section>
+{% else %}<p class="lead">Nothing is waiting. 🎉</p>{% endif %}
+<div class="row"><a class="btn ghost" href="{{ url_for('search') }}">Search any record</a></div>
+{% endblock %}
