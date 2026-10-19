@@ -12,3 +12,4 @@ services:
       - { key: PORTAL_SECRET_KEY, generateValue: true }
       - { key: PORTAL_SETUP_CODE, generateValue: true }
       - { key: PORTAL_DEMO_TOKEN, sync: false }
+      - { key: PORTAL_DEMO_PASSWORD, sync: false }

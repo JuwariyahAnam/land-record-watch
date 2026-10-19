@@ -36,7 +36,13 @@ def send_audio(chat_id, audio_bytes, caption=""):
     if _dry():
         print(f"[dry run] telegram audio to {chat_id}: {len(audio_bytes)} bytes")
         return
+    wav = audio_bytes[:4] == b"RIFF"  # VerbX returns WAV
+    name = "alert.wav" if wav else "alert.mp3"
     r = requests.post(_url("sendAudio"),
                       data={"chat_id": chat_id, "caption": caption[:900]},
-                      files={"audio": ("alert.mp3", audio_bytes)}, timeout=60)
+                      files={"audio": (name, audio_bytes)}, timeout=60)
+    if not r.ok and wav:  # some clients refuse WAV as music: send it as a file instead
+        r = requests.post(_url("sendDocument"),
+                          data={"chat_id": chat_id, "caption": caption[:900]},
+                          files={"document": (name, audio_bytes)}, timeout=60)
     _check(r)

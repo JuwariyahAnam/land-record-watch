@@ -220,3 +220,16 @@ def test_demo_land_comes_back_with_the_same_link(tmp_path, monkeypatch):
     assert r.status_code == 200 and b"demo-village" in r.data
     create_app()  # restart: must not duplicate or fail
     assert c.get("/public/" + "x" * 24).status_code == 200
+
+
+def test_demo_landlord_can_log_in_when_password_is_set(tmp_path, monkeypatch):
+    import re
+    monkeypatch.setenv("PORTAL_DB", str(tmp_path / "p.db"))
+    monkeypatch.setenv("PORTAL_DEMO_TOKEN", "y" * 24)
+    monkeypatch.setenv("PORTAL_DEMO_PASSWORD", "Demo-pass-2026")
+    from src.portal.app import create_app
+    c = create_app().test_client()
+    page = c.get("/login").get_data(as_text=True)
+    tok = re.search(r'name="csrf" value="([^"]+)"', page).group(1)
+    r = c.post("/login", data={"csrf": tok, "email": "demo-landlord@demo.example", "password": "Demo-pass-2026"})
+    assert r.status_code == 302 and "/dashboard" in r.headers["Location"]

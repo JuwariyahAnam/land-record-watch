@@ -27,12 +27,18 @@ def seed_demo_land():
     if len(token) < 20:
         return
     db = store.conn()
+    email = "demo-landlord@demo.example"
+    user = store.user_by_email(db, email)
+    pw = os.environ.get("PORTAL_DEMO_PASSWORD", "")
+    if user is None:
+        # without PORTAL_DEMO_PASSWORD nobody can log in as this account
+        first = pw if pw and sec.password_problem(pw, email, "Demo Landlord") is None else sec.new_token() + "aA1"
+        uid = store.create_user(db, email, "Demo Landlord", "landlord", sec.hash_password(first))
+        user = store.user_by_id(db, uid)
+    elif pw and sec.password_problem(pw, email, "Demo Landlord") is None and not sec.verify_password(pw, user["pw_hash"]):
+        db.execute("UPDATE users SET pw_hash=?, failed=0, locked_until=0 WHERE id=?", (sec.hash_password(pw), user["id"]))
+        db.commit()
     if store.land_by_token(db, token) is None:
-        email = "demo-landlord@demo.example"
-        user = store.user_by_email(db, email)
-        if user is None:
-            uid = store.create_user(db, email, "Demo Landlord", "landlord", sec.hash_password(sec.new_token() + "aA1"))
-            user = store.user_by_id(db, uid)
         store.add_land(db, user, {"district": "demo-district", "taluk": "demo-taluk", "hobli": "demo-hobli",
                                   "village": "demo-village", "survey_no": "101", "surnoc": "*", "hissa": "1",
                                   "extent": "5-00", "owner_name": "Demo Owner"}, token=token)
