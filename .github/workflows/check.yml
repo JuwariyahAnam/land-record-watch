@@ -29,6 +29,7 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           BROWSERBASE_API_KEY: ${{ secrets.BROWSERBASE_API_KEY }}
           BROWSERBASE_PROJECT_ID: ${{ secrets.BROWSERBASE_PROJECT_ID }}
+          VERBX_API_KEY: ${{ secrets.VERBX_API_KEY }}
           DEV_NO_BROWSER: ${{ vars.DEV_NO_BROWSER || '0' }}
           BB_MAX_SESSIONS_PER_DAY: "5"
         run: |
