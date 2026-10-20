@@ -271,3 +271,29 @@ def test_old_database_gets_language_column(tmp_path, monkeypatch):
     monkeypatch.setenv("PORTAL_DB", str(path))
     cols = [r["name"] for r in store.conn().execute("PRAGMA table_info(lands)")]
     assert "alert_language" in cols
+
+
+def test_site_can_be_shown_in_kannada_and_hindi(app):
+    landlord = signup(app, "landlord", "l@demo.example")
+    for code, word in (("kn", "ಲಾಗಿನ್"), ("hi", "लॉग इन")):
+        c = app.test_client()
+        assert c.get(f"/lang/{code}").status_code == 302
+        html = c.get("/login").get_data(as_text=True)
+        assert word in html and f'lang="{code}"' in html
+    assert app.test_client().get("/lang/xx").status_code == 404
+
+
+def test_public_watch_page_stays_english_so_the_agent_can_read_it(app):
+    landlord = signup(app, "landlord", "l@demo.example")
+    register_land(landlord)
+    post(landlord, "/lands/1/mutation", "/lands/1", kind="Sale")
+    token = store.conn().execute("SELECT public_token FROM lands").fetchone()[0]
+    c = app.test_client()
+    c.get("/lang/kn")
+    rec = parse_fixture(c.get(f"/public/{token}").get_data(as_text=True))
+    assert rec.extent == "2-10" and rec.mutations[0]["status"] == "Pending"
+
+
+def test_missing_translation_never_breaks_a_page():
+    from src.portal import i18n
+    assert i18n.translate_html("<p>Some brand new sentence</p>", "kn") == "<p>Some brand new sentence</p>"

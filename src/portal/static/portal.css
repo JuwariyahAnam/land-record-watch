@@ -62,3 +62,9 @@ footer{max-width:1080px;margin:0 auto;padding:0 20px 40px;color:var(--muted);fon
 .narrow{max-width:520px;margin:0 auto}.narrow-lg{max-width:720px;margin:0 auto}.card-link{text-decoration:none;color:inherit}
 @media (prefers-color-scheme:dark){.btn.ghost{color:var(--green) !important}}
 :root .btn.ghost{color:var(--green)}
+
+.langs{display:inline-flex;gap:2px;border:1px solid var(--line);border-radius:999px;padding:2px;margin-left:4px}
+.top nav .langs a{padding:4px 10px;font-size:13px}
+.langs a[aria-current]{background:var(--green);color:var(--card)}
+html[lang=kn] body,html[lang=kn] .brand,html[lang=kn] h1,html[lang=kn] h2,html[lang=kn] h3,html[lang=kn] input,html[lang=kn] select,html[lang=kn] button{font-family:"Noto Sans Kannada",Inter,system-ui,sans-serif}
+html[lang=hi] body,html[lang=hi] .brand,html[lang=hi] h1,html[lang=hi] h2,html[lang=hi] h3,html[lang=hi] input,html[lang=hi] select,html[lang=hi] button{font-family:"Noto Sans Devanagari",Inter,system-ui,sans-serif}

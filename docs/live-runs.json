@@ -1,9 +1,72 @@
 [
- {"scenario":"1 Unchanged record","page":"before","expected":"nochange (first snapshot saved)","actual":"no change","session":"55a63022-cd1d-48ee-be8e-5bd2c2cd4759"},
- {"scenario":"2 New mutation entry","page":"mutation","expected":"alert:high, re-check this evening","actual":"alert sent to Telegram, decision alert_and_recheck","session":"a51ff46d-4ac6-48e9-a737-13b414e69299"},
- {"scenario":"3 Mutation approved","page":"approved","expected":"alert:medium","actual":"alert sent to Telegram, decision alert","session":"02df7173-0b34-47c1-a53b-d9d4fd6e8bc4"},
- {"scenario":"7 CAPTCHA shown","page":"captcha","expected":"ops (check could not run, never an all-clear)","actual":"CAPTCHA detected, check paused, ops alert sent","session":"0f9f67a5-7881-4ca2-9508-bb492b017637"},
- {"scenario":"4 Owner changed","page":"owner","expected":"alert:critical","actual":"alert sent to Telegram, decision alert","session":"9141302e-5cbe-4580-95d0-47f84eea8da1"},
- {"scenario":"5 Extent changed","page":"extent","expected":"alert:high","actual":"alert sent to Telegram, decision alert","session":"7e2fd001-4b47-4047-85b2-23c381bad4e1"},
- {"scenario":"6 Layout changed","page":"layout","expected":"ops","actual":"expected fields missing, ops alert sent","session":"19dfab10-d92c-421f-84a0-cd5f0ea95f43"}
+ {
+  "scenario": "1 Unchanged record",
+  "page": "before",
+  "expected": "nochange (first snapshot saved)",
+  "actual": "no change",
+  "session": "55a63022-cd1d-48ee-be8e-5bd2c2cd4759"
+ },
+ {
+  "scenario": "2 New mutation entry",
+  "page": "mutation",
+  "expected": "alert:high, re-check this evening",
+  "actual": "alert sent to Telegram, decision alert_and_recheck",
+  "session": "a51ff46d-4ac6-48e9-a737-13b414e69299"
+ },
+ {
+  "scenario": "3 Mutation approved",
+  "page": "approved",
+  "expected": "alert:medium",
+  "actual": "alert sent to Telegram, decision alert",
+  "session": "02df7173-0b34-47c1-a53b-d9d4fd6e8bc4"
+ },
+ {
+  "scenario": "7 CAPTCHA shown",
+  "page": "captcha",
+  "expected": "ops (check could not run, never an all-clear)",
+  "actual": "CAPTCHA detected, check paused, ops alert sent",
+  "session": "0f9f67a5-7881-4ca2-9508-bb492b017637"
+ },
+ {
+  "scenario": "4 Owner changed",
+  "page": "owner",
+  "expected": "alert:critical",
+  "actual": "alert sent to Telegram, decision alert",
+  "session": "9141302e-5cbe-4580-95d0-47f84eea8da1"
+ },
+ {
+  "scenario": "5 Extent changed",
+  "page": "extent",
+  "expected": "alert:high",
+  "actual": "alert sent to Telegram, decision alert",
+  "session": "7e2fd001-4b47-4047-85b2-23c381bad4e1"
+ },
+ {
+  "scenario": "6 Layout changed",
+  "page": "layout",
+  "expected": "ops",
+  "actual": "expected fields missing, ops alert sent",
+  "session": "19dfab10-d92c-421f-84a0-cd5f0ea95f43"
+ },
+ {
+  "scenario": "11 Live registry: baseline (deployed site, cloud browser)",
+  "page": "live Render registry, public watch link",
+  "expected": "first snapshot saved",
+  "actual": "first snapshot saved",
+  "session": "3bdb3c6e-c47b-4293-a75b-8c5d2f033d5a"
+ },
+ {
+  "scenario": "12 Live registry: unchanged",
+  "page": "live Render registry, public watch link",
+  "expected": "nochange",
+  "actual": "no change",
+  "session": "d88185cd-86b8-4156-bd3a-1cce3d832d3f"
+ },
+ {
+  "scenario": "13 Live registry: mutations approved and extent 5-00 to 12-20",
+  "page": "live Render registry, public watch link",
+  "expected": "alert (high) in the chosen language, with voice",
+  "actual": "alert decided and sent to Telegram, decision alert",
+  "session": "aee2a4ca-4f30-48e1-9c87-e6e56e7361ca"
+ }
 ]

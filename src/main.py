@@ -117,6 +117,7 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--once", action="store_true", help="run one check of every parcel")
     ap.add_argument("--scenario", default="before", help="test page to read when SOURCE=fixture")
+    ap.add_argument("--closely", action="store_true", help="with --once: only parcels that have a pending mutation")
     ap.add_argument("--schedule", action="store_true", help="run the daily scheduler")
     args = ap.parse_args()
     if args.schedule:
@@ -128,4 +129,4 @@ if __name__ == "__main__":
         print("scheduler running, press Ctrl+C to stop")
         s.start()
     else:
-        run_all(args.scenario)
+        run_all(args.scenario, only_closely=args.closely)

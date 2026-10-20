@@ -31,3 +31,6 @@ Replays are in the Browserbase dashboard (private link, so screenshots are attac
 | 4 Owner changed | owner | alert:critical | alert sent to Telegram, decision alert | `9141302e-5cbe-4580-95d0-47f84eea8da1` |
 | 5 Extent changed | extent | alert:high | alert sent to Telegram, decision alert | `7e2fd001-4b47-4047-85b2-23c381bad4e1` |
 | 6 Layout changed | layout | ops | expected fields missing, ops alert sent | `19dfab10-d92c-421f-84a0-cd5f0ea95f43` |
+| 11 Live registry: baseline (deployed site, cloud browser) | live Render registry, public watch link | first snapshot saved | first snapshot saved | `3bdb3c6e-c47b-4293-a75b-8c5d2f033d5a` |
+| 12 Live registry: unchanged | live Render registry, public watch link | nochange | no change | `d88185cd-86b8-4156-bd3a-1cce3d832d3f` |
+| 13 Live registry: mutations approved and extent 5-00 to 12-20 | live Render registry, public watch link | alert (high) in the chosen language, with voice | alert decided and sent to Telegram, decision alert | `aee2a4ca-4f30-48e1-9c87-e6e56e7361ca` |

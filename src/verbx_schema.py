@@ -24,8 +24,6 @@ def resolve(spec, node, depth=0):
 if __name__ == "__main__":
     key = os.environ.get("VERBX_API_KEY", "")
     spec = requests.get(BASE + "/openapi.json", headers={"x-api-key": key}, timeout=30).json()
-    for name in ("TTSRequestBody",):
-        print(name, json.dumps(resolve(spec, spec["components"]["schemas"].get(name, {})), ensure_ascii=False)[:2500])
+    for name in ("TTSBody", "TTSResponse", "PersonalTTSRequest", "PersonalTTSResponse", "TravelTTSRequest", "PlaygroundTtsIn"):
+        print(name, json.dumps(resolve(spec, spec["components"]["schemas"].get(name, {})), ensure_ascii=False)[:1500])
     print()
-    r = requests.get(BASE + "/v1/tts/voices", headers={"x-api-key": key}, timeout=30)
-    print("voices: HTTP", r.status_code, r.text[:1800])

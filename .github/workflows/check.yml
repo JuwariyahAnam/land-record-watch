@@ -1,7 +1,8 @@
 name: daily-land-check
 on:
   schedule:
-    - cron: "30 1 * * *"   # 07:00 IST
+    - cron: "30 1 * * *"    # 07:00 IST, every parcel
+    - cron: "30 13 * * *"   # 19:00 IST, only parcels with a pending mutation
   workflow_dispatch: {}
 concurrency: land-check
 jobs:
@@ -19,6 +20,17 @@ jobs:
           path: data/watch.db
           key: watch-db-${{ github.run_id }}
           restore-keys: watch-db-
+      - name: Wake the registry (the free Render site sleeps)
+        env:
+          PORTAL_BASE: ${{ secrets.PORTAL_BASE }}
+        run: |
+          for i in $(seq 1 12); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 "${PORTAL_BASE%/}/healthz" || true)
+            echo "wake attempt $i: HTTP $code"
+            [ "$code" = "200" ] && exit 0
+            sleep 10
+          done
+          echo "registry did not wake in time; the check will report that honestly"
       - name: Run the check
         env:
           SOURCE: portal
@@ -30,8 +42,11 @@ jobs:
           BROWSERBASE_API_KEY: ${{ secrets.BROWSERBASE_API_KEY }}
           BROWSERBASE_PROJECT_ID: ${{ secrets.BROWSERBASE_PROJECT_ID }}
           VERBX_API_KEY: ${{ secrets.VERBX_API_KEY }}
+          LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_MODEL: ${{ secrets.LLM_MODEL }}
           DEV_NO_BROWSER: ${{ vars.DEV_NO_BROWSER || '0' }}
           BB_MAX_SESSIONS_PER_DAY: "5"
         run: |
           python -m src.seed_parcel
-          python -m src.main --once
+          python -m src.main --once ${{ github.event.schedule == '30 13 * * *' && '--closely' || '' }}

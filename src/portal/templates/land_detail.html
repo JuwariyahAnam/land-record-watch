@@ -12,7 +12,7 @@
       <form method="post" action="{{ url_for('mutation_file', land_id=land.id) }}">
         <input type="hidden" name="csrf" value="{{ csrf }}">
         <label for="kind">Type</label>
-        <select id="kind" name="kind">{% for k in kinds %}<option>{{ k }}</option>{% endfor %}</select>
+        <select id="kind" name="kind">{% for k in kinds %}<option value="{{ k }}">{{ k }}</option>{% endfor %}</select>
         <label for="note">Note (optional)</label><input id="note" name="note" maxlength="200">
         <div class="row"><button class="btn" type="submit">File mutation</button></div>
       </form>

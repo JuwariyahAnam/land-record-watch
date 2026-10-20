@@ -31,5 +31,7 @@ Repo, Settings, Secrets and variables, Actions. Add these secrets:
 | BROWSERBASE_PROJECT_ID | from Browserbase |
 
 Optional variables: `PARCEL_LANGUAGE` (en, kn, hi), `DEV_NO_BROWSER` (set 1 to skip Browserbase).
-Run it from the Actions tab: daily-land-check, Run workflow. It also runs daily at 07:00 IST.
+Run it from the Actions tab: daily-land-check, Run workflow. It also runs daily at 07:00 IST (every parcel) and at 19:00 IST (only parcels with a pending mutation). A first step wakes the free Render site before the check, because it sleeps when idle. Add the secret `VERBX_API_KEY` for voice notes. The three `LLM_*` secrets are optional; without them the agent decides with its rules.
+
+The owner picks the alert language on the registry website (land page, Alert language). The agent reads it from the watch page on each check, so no setting is needed here.
 The first run saves a snapshot. Change something on the website, run again, and the alert arrives.

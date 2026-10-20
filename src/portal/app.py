@@ -8,6 +8,7 @@ from functools import wraps
 
 from flask import Flask, abort, flash, g, redirect, render_template, request, session, url_for
 
+from . import i18n
 from . import security as sec
 from . import store
 
@@ -62,6 +63,8 @@ def create_app():
         g.db = store.conn()
         uid = session.get("uid")
         g.user = store.user_by_id(g.db, uid) if uid else None
+        lang = request.cookies.get("lang", "en")
+        g.lang = lang if lang in i18n.LANGS else "en"
         if request.method == "POST":
             if not sec.same(request.form.get("csrf", ""), session.get("csrf", "x")):
                 abort(400)
@@ -86,7 +89,7 @@ def create_app():
     def inject():
         if "csrf" not in session:
             session["csrf"] = sec.new_token()
-        return {"csrf": session["csrf"], "user": g.user, "ts": lambda t: datetime.fromtimestamp(t, IST).strftime("%d %b %Y, %I:%M %p")}
+        return {"csrf": session["csrf"], "user": g.user, "lang": g.get("lang", "en"), "ts": lambda t: datetime.fromtimestamp(t, IST).strftime("%d %b %Y, %I:%M %p")}
 
     def need(*roles):
         def deco(fn):
@@ -129,8 +132,32 @@ def create_app():
         row = store.land_by_token(g.db, token)
         if row is None:
             abort(404)
+        g.public = True  # the agent reads this page, so it always stays English
         resp = app.make_response(render_template("public.html", r=store.record_view(g.db, row)))
         resp.headers["X-Robots-Tag"] = "noindex"
+        return resp
+
+    @app.get("/lang/<code>")
+    def set_lang(code):
+        if code not in i18n.LANGS:
+            abort(404)
+        target = "/"
+        ref = request.referrer or ""
+        if ref:
+            from urllib.parse import urlparse
+            p = urlparse(ref)
+            if p.netloc == request.host and p.path.startswith("/") and not p.path.startswith("//") and not p.path.startswith("/public/"):
+                target = p.path + (("?" + p.query) if p.query else "")
+        resp = redirect(target)
+        resp.set_cookie("lang", code, max_age=60 * 60 * 24 * 180, samesite="Lax", httponly=True,
+                        secure=os.environ.get("PORTAL_HTTPS") == "1")
+        return resp
+
+    @app.after_request
+    def translate(resp):
+        if (g.get("lang", "en") != "en" and not g.get("public") and resp.mimetype == "text/html"
+                and resp.status_code < 500 and not resp.direct_passthrough):
+            resp.set_data(i18n.translate_html(resp.get_data(as_text=True), g.lang))
         return resp
 
     # ---------- accounts
