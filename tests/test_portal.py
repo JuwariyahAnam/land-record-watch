@@ -297,3 +297,40 @@ def test_public_watch_page_stays_english_so_the_agent_can_read_it(app):
 def test_missing_translation_never_breaks_a_page():
     from src.portal import i18n
     assert i18n.translate_html("<p>Some brand new sentence</p>", "kn") == "<p>Some brand new sentence</p>"
+
+
+def test_registry_pings_agent_after_a_change_and_never_leaks_the_token(app, monkeypatch):
+    from src.portal import trigger
+    sent = []
+    monkeypatch.setenv("GITHUB_DISPATCH_TOKEN", "secret-token-123")
+    monkeypatch.setenv("GITHUB_REPO", "me/land-record-watch")
+    monkeypatch.setattr(trigger, "DELAY", 0.05)
+    monkeypatch.setattr(trigger.requests, "post", lambda url, **k: sent.append((url, k)) or type("R", (), {"status_code": 204})())
+    landlord = signup(app, "landlord", "l@demo.example")
+    register_land(landlord)
+    post(landlord, "/lands/1/mutation", "/lands/1", kind="Sale")
+    post(landlord, "/lands/1/language", "/lands/1", language="en")  # not a record change
+    import time
+    time.sleep(0.4)
+    assert len(sent) == 1 and sent[0][0].endswith("/repos/me/land-record-watch/actions/workflows/check.yml/dispatches")
+    assert sent[0][1]["json"] == {"ref": "main"}
+
+
+def test_no_ping_without_settings(app, monkeypatch):
+    from src.portal import trigger
+    monkeypatch.delenv("GITHUB_DISPATCH_TOKEN", raising=False)
+    assert trigger.ping_agent() is False
+
+
+def test_failed_ping_does_not_break_the_page(app, monkeypatch, capsys):
+    from src.portal import trigger
+    monkeypatch.setenv("GITHUB_DISPATCH_TOKEN", "secret-token-123"); monkeypatch.setenv("GITHUB_REPO", "me/x")
+    monkeypatch.setattr(trigger, "DELAY", 0.05)
+    def boom(*a, **k): raise OSError("secret-token-123 in url")
+    monkeypatch.setattr(trigger.requests, "post", boom)
+    landlord = signup(app, "landlord", "l@demo.example")
+    register_land(landlord)
+    assert post(landlord, "/lands/1/mutation", "/lands/1", kind="Sale").status_code == 302
+    import time
+    time.sleep(0.4)
+    assert "secret-token-123" not in capsys.readouterr().out

@@ -35,3 +35,12 @@ Run it from the Actions tab: daily-land-check, Run workflow. It also runs daily 
 
 The owner picks the alert language on the registry website (land page, Alert language). The agent reads it from the watch page on each check, so no setting is needed here.
 The first run saves a snapshot. Change something on the website, run again, and the alert arrives.
+
+## 4. Check as soon as a record changes (optional)
+The registry can start the daily-land-check workflow right after a change (a mutation is filed or decided, the extent or the owner is changed), so the alert arrives about a minute later instead of at the next scheduled run. The agent still opens the record in a cloud browser, compares it and decides; the registry only wakes it up.
+
+1. GitHub, Settings, Developer settings, Fine-grained tokens, Generate new token. Repository access: only land-record-watch. Permission: Actions, Read and write. Nothing else. Choose a short expiry.
+2. In Render, Environment, add `GITHUB_DISPATCH_TOKEN` (the token) and `GITHUB_REPO` (for example `JuwariyahAnam/land-record-watch`). Save; Render redeploys.
+3. Change something on the registry. In the repo, Actions tab, a run named daily-land-check starts by itself within a minute (its title says "Manually run by" because the registry uses the same call as the Run workflow button).
+
+Pings are sent 20 seconds after the last change, so a burst of edits starts one check. If the ping fails, the scheduled checks still run. A real government portal would not push changes like this, so scheduled checks remain the main method; the ping is for the demo registry.
