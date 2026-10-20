@@ -3,5 +3,6 @@
 {% block body %}
 <h1>Land record</h1>
 <p class="meta">Unlisted link shared by the owner. The owner's name is masked. Fictional data, not an official record.</p>
-<section class="card">{% include "_record.html" %}</section>
+<section class="card">{% include "_record.html" %}
+<p class="meta">Alert language: <span data-field="language">{{ r.alert_language }}</span></p></section>
 {% endblock %}

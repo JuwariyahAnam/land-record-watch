@@ -18,6 +18,7 @@ class Record:
     owners: list      # as shown on the page, hashed straight away, never stored
     extent: str       # as shown, for example "2-10"
     mutations: list   # [{"id": "...", "date": "...", "status": "..."}]
+    language: str = None  # the owner's chosen alert language (kn, hi, en), when the page shows one
 
 
 def parse_fixture(html):
@@ -35,7 +36,9 @@ def parse_fixture(html):
             raise LayoutChanged("mutation row incomplete")
         muts.append({"id": row["data-mutation"], "date": date.get_text(strip=True),
                      "status": status.get_text(strip=True)})
-    return Record(owners, extent.get_text(strip=True), muts)
+    lang = soup.select_one("[data-field=language]")
+    lang = lang.get_text(strip=True) if lang is not None else None
+    return Record(owners, extent.get_text(strip=True), muts, lang if lang in ("kn", "hi", "en") else None)
 
 
 class FixtureSource:

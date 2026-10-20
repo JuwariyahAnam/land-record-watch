@@ -63,6 +63,12 @@ def check_parcel(db, parcel, scenario="before"):
     if rec is None:
         return ops_alert(db, parcel)
 
+    if rec.language and rec.language != parcel["language"]:  # the owner changed it on the website
+        db.execute("UPDATE parcels SET language=? WHERE id=?", (rec.language, parcel["id"]))
+        db.commit()
+        print(f"alert language is now {rec.language}")
+        lang = rec.language
+        parcel = db.execute("SELECT * FROM parcels WHERE id=?", (parcel["id"],)).fetchone()
     new = summarize(rec)
     snap_id = None
     last = db.execute("SELECT summary FROM snapshots WHERE parcel_id=? ORDER BY id DESC LIMIT 1",

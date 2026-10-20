@@ -284,7 +284,7 @@ def create_app():
     def land_detail(land_id):
         row = own_land(land_id)
         return render_template("land_detail.html", r=store.record_view(g.db, row), land=row,
-                               events=store.events(g.db, land_id), kinds=store.KINDS,
+                               events=store.events(g.db, land_id), kinds=store.KINDS, languages=store.LANGUAGES,
                                watch_url=url_for("public_record", token=row["public_token"], _external=True))
 
     @app.post("/lands/<int:land_id>/mutation")
@@ -299,6 +299,17 @@ def create_app():
         else:
             ref = store.file_mutation(g.db, land_id, g.user, kind, note, today())
             flash(f"Mutation {ref} filed. It stays Pending until the registrar decides.", "ok")
+        return redirect(url_for("land_detail", land_id=land_id))
+
+    @app.post("/lands/<int:land_id>/language")
+    @need("landlord")
+    def language_set(land_id):
+        own_land(land_id)
+        lang = request.form.get("language")
+        if lang not in store.LANGUAGES:
+            abort(400)
+        store.set_language(g.db, land_id, g.user, lang)
+        flash("Alert language saved. The next check will send alerts in this language.", "ok")
         return redirect(url_for("land_detail", land_id=land_id))
 
     # ---------- buyer (and registrar)

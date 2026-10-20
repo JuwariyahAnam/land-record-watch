@@ -95,3 +95,29 @@ def test_failed_send_is_retried_next_run(tmp_path, monkeypatch):
     monkeypatch.setattr(m, "send_text", lambda c, t: sent.append(t))
     assert m.check_parcel(db, parcel(), "mutation").startswith("alert:")
     assert sent
+
+
+def test_agent_follows_language_chosen_on_website(tmp_path, monkeypatch):
+    import src.main as m
+    from src.db import conn
+    from src.sources import Record
+    monkeypatch.setenv("WATCH_DB", str(tmp_path / "w.db"))
+    monkeypatch.setenv("DRY_RUN", "0")
+    db = conn()
+    db.execute("""INSERT INTO parcels(label,district,taluk,hobli,village,survey_no,surnoc,hissa,language,chat_id,
+                  own_land_confirmed_at) VALUES ('t','d','t','h','v','1','*','0','en','1',1)""")
+    db.commit()
+    recs = [Record(["A"], "2-10", [], "kn"), Record(["A"], "2-05", [], "kn")]
+    class Src:
+        name = "portal"
+        def fetch(self, parcel): return recs.pop(0)
+    sent, voiced = [], []
+    monkeypatch.setattr(m, "get_source", lambda s: Src())
+    monkeypatch.setattr(m, "send_text", lambda c, t: sent.append(t))
+    monkeypatch.setattr(m, "speak", lambda text, lang: voiced.append(lang) or b"x" * 2000)
+    monkeypatch.setattr(m, "send_audio", lambda *a, **k: None)
+    parcel = lambda: db.execute("SELECT * FROM parcels").fetchone()
+    assert m.check_parcel(db, parcel(), "x") == "first"
+    assert parcel()["language"] == "kn"
+    assert m.check_parcel(db, parcel(), "x").startswith("alert:")
+    assert voiced == ["kn"] and sent

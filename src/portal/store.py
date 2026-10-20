@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS lands(
   hobli TEXT NOT NULL COLLATE NOCASE, village TEXT NOT NULL COLLATE NOCASE,
   survey_no TEXT NOT NULL COLLATE NOCASE, surnoc TEXT NOT NULL DEFAULT '*',
   hissa TEXT NOT NULL DEFAULT '0' COLLATE NOCASE,
-  extent TEXT NOT NULL, owner_name TEXT NOT NULL,
+  extent TEXT NOT NULL, owner_name TEXT NOT NULL, alert_language TEXT NOT NULL DEFAULT 'kn',
   public_token TEXT NOT NULL UNIQUE, created_at REAL NOT NULL, updated_at REAL NOT NULL,
   UNIQUE(district, taluk, hobli, village, survey_no, surnoc, hissa));
 CREATE TABLE IF NOT EXISTS mutations(
@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS events(
   at REAL NOT NULL, actor TEXT NOT NULL, text TEXT NOT NULL);
 """
 
+LANGUAGES = {"kn": "ಕನ್ನಡ (Kannada)", "hi": "हिन्दी (Hindi)", "en": "English"}
 KINDS = ["Sale", "Inheritance", "Partition", "Gift", "Correction"]
 
 
@@ -42,6 +43,10 @@ def conn():
     c.row_factory = sqlite3.Row
     c.execute("PRAGMA foreign_keys=ON")
     c.executescript(SCHEMA)
+    cols = [r["name"] for r in c.execute("PRAGMA table_info(lands)")]
+    if "alert_language" not in cols:  # database made before the language setting existed
+        c.execute("ALTER TABLE lands ADD COLUMN alert_language TEXT NOT NULL DEFAULT 'kn'")
+        c.commit()
     return c
 
 
@@ -149,6 +154,14 @@ def set_extent(c, land_id, registrar, extent):
     c.commit()
 
 
+def set_language(c, land_id, user, lang):
+    if lang not in LANGUAGES:
+        raise ValueError("unknown language")
+    c.execute("UPDATE lands SET alert_language=? WHERE id=?", (lang, land_id))
+    log(c, land_id, user["name"], "Alert language changed to " + lang)
+    c.commit()
+
+
 def set_owner(c, land_id, registrar, name):
     c.execute("UPDATE lands SET owner_name=?, updated_at=? WHERE id=?", (name, time.time(), land_id))
     log(c, land_id, registrar["name"], "Ownership transfer recorded")
@@ -169,5 +182,5 @@ def record_view(c, row):
         "extent": row["extent"],
         "owner_display": f"{security.mask_name(row['owner_name'])} (ref {security.owner_ref(row['owner_name'])})",
         "mutations": muts, "pending": len(pending), "updated_at": row["updated_at"],
-        "status": "pending" if pending else "clear",
+        "status": "pending" if pending else "clear", "alert_language": row["alert_language"],
     }

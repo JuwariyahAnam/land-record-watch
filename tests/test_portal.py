@@ -233,3 +233,41 @@ def test_demo_landlord_can_log_in_when_password_is_set(tmp_path, monkeypatch):
     tok = re.search(r'name="csrf" value="([^"]+)"', page).group(1)
     r = c.post("/login", data={"csrf": tok, "email": "demo-landlord@demo.example", "password": "Demo-pass-2026"})
     assert r.status_code == 302 and "/dashboard" in r.headers["Location"]
+
+
+def test_landlord_sets_alert_language_and_agent_can_read_it(app):
+    landlord = signup(app, "landlord", "l@demo.example")
+    register_land(landlord)
+    token = store.conn().execute("SELECT public_token FROM lands").fetchone()[0]
+    anon = app.test_client()
+    assert parse_fixture(anon.get(f"/public/{token}").get_data(as_text=True)).language == "kn"
+    assert post(landlord, "/lands/1/language", "/lands/1", language="hi").status_code == 302
+    assert parse_fixture(anon.get(f"/public/{token}").get_data(as_text=True)).language == "hi"
+    assert 'value="hi" selected' in landlord.get("/lands/1").get_data(as_text=True)
+    assert post(landlord, "/lands/1/language", "/lands/1", language="xx").status_code == 400
+
+
+def test_language_setting_is_owner_only_and_does_not_look_like_a_record_change(app):
+    from src.differ import diff, summarize
+    landlord = signup(app, "landlord", "l@demo.example")
+    register_land(landlord)
+    other = signup(app, "landlord", "o@demo.example")
+    assert post(other, "/lands/1/language", "/dashboard", language="en").status_code in (403, 404, 302)
+    assert store.conn().execute("SELECT alert_language FROM lands").fetchone()[0] == "kn"
+    token = store.conn().execute("SELECT public_token FROM lands").fetchone()[0]
+    anon = app.test_client()
+    before = summarize(parse_fixture(anon.get(f"/public/{token}").get_data(as_text=True)))
+    post(landlord, "/lands/1/language", "/lands/1", language="en")
+    after = summarize(parse_fixture(anon.get(f"/public/{token}").get_data(as_text=True)))
+    assert diff(before, after) == []
+
+
+def test_old_database_gets_language_column(tmp_path, monkeypatch):
+    import sqlite3
+    path = tmp_path / "old.db"
+    c = sqlite3.connect(path)
+    c.execute("CREATE TABLE lands(id INTEGER PRIMARY KEY, owner_id INTEGER, district TEXT, taluk TEXT, hobli TEXT, village TEXT, survey_no TEXT, surnoc TEXT, hissa TEXT, extent TEXT, owner_name TEXT, public_token TEXT, created_at REAL, updated_at REAL)")
+    c.commit(); c.close()
+    monkeypatch.setenv("PORTAL_DB", str(path))
+    cols = [r["name"] for r in store.conn().execute("PRAGMA table_info(lands)")]
+    assert "alert_language" in cols
