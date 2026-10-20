@@ -11,6 +11,7 @@ from flask import Flask, abort, flash, g, redirect, render_template, request, se
 from . import i18n
 from . import security as sec
 from . import store
+from .trigger import ping_agent
 
 IST = timezone(timedelta(hours=5, minutes=30))
 LOCK_AFTER, LOCK_SECONDS = 5, 300
@@ -43,6 +44,10 @@ def seed_demo_land():
         store.add_land(db, user, {"district": "demo-district", "taluk": "demo-taluk", "hobli": "demo-hobli",
                                   "village": "demo-village", "survey_no": "101", "surnoc": "*", "hissa": "1",
                                   "extent": "5-00", "owner_name": "Demo Owner"}, token=token)
+        lang = os.environ.get("PORTAL_DEMO_LANGUAGE", "")
+        if lang in store.LANGUAGES:  # a restart must not flip the demo back to Kannada
+            db.execute("UPDATE lands SET alert_language=? WHERE public_token=?", (lang, token))
+            db.commit()
     db.close()
 
 
@@ -325,6 +330,7 @@ def create_app():
             flash("You already have 3 pending mutations on this land. Wait for the registrar.", "error")
         else:
             ref = store.file_mutation(g.db, land_id, g.user, kind, note, today())
+            ping_agent()
             flash(f"Mutation {ref} filed. It stays Pending until the registrar decides.", "ok")
         return redirect(url_for("land_detail", land_id=land_id))
 
@@ -387,6 +393,7 @@ def create_app():
         if decision not in ("approve", "reject"):
             abort(400)
         m = store.decide(g.db, mutation_id, g.user, decision, sec.clean(request.form.get("note"), 200), today())
+        ping_agent()
         if m is None:
             abort(404)
         flash(f"{m['ref']} {'approved' if decision == 'approve' else 'rejected'}.", "ok")
@@ -402,6 +409,7 @@ def create_app():
             flash("Extent must look like 2-10.", "error")
         else:
             store.set_extent(g.db, land_id, g.user, extent)
+            ping_agent()
             flash("Extent updated.", "ok")
         return redirect(url_for("registrar_land", land_id=land_id))
 
@@ -415,6 +423,7 @@ def create_app():
             flash("Enter the new owner's name.", "error")
         else:
             store.set_owner(g.db, land_id, g.user, name)
+            ping_agent()
             flash("Ownership transfer recorded.", "ok")
         return redirect(url_for("registrar_land", land_id=land_id))
 

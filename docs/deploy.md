@@ -44,3 +44,5 @@ The registry can start the daily-land-check workflow right after a change (a mut
 3. Change something on the registry. In the repo, Actions tab, a run named daily-land-check starts by itself within a minute (its title says "Manually run by" because the registry uses the same call as the Run workflow button).
 
 Pings are sent 20 seconds after the last change, so a burst of edits starts one check. If the ping fails, the scheduled checks still run. A real government portal would not push changes like this, so scheduled checks remain the main method; the ping is for the demo registry.
+
+The free Render site forgets its data when it restarts, and the demo land comes back with the default alert language (Kannada). Set `PORTAL_DEMO_LANGUAGE` in Render to `kn`, `hi` or `en` so the demo land always comes back in the language you want. An uptime pinger (for example UptimeRobot on `/healthz` every 5 minutes) also stops the site from sleeping and restarting.

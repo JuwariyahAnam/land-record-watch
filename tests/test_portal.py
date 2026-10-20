@@ -334,3 +334,11 @@ def test_failed_ping_does_not_break_the_page(app, monkeypatch, capsys):
     import time
     time.sleep(0.4)
     assert "secret-token-123" not in capsys.readouterr().out
+
+
+def test_demo_land_keeps_chosen_language_after_restart(tmp_path, monkeypatch):
+    monkeypatch.setenv("PORTAL_DB", str(tmp_path / "p.db"))
+    monkeypatch.setenv("PORTAL_DEMO_TOKEN", "d" * 24)
+    monkeypatch.setenv("PORTAL_DEMO_LANGUAGE", "hi")
+    create_app()
+    assert store.conn().execute("SELECT alert_language FROM lands").fetchone()[0] == "hi"
