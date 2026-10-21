@@ -1,31 +1,49 @@
 # Land Record Watch
 
-A voice agent that watches the **public** land record for your own parcel, spots changes
-(a new mutation entry, a changed owner or extent) and tells you in Kannada, Hindi or English
-what changed and what to do next. Built for the Ziro Agentic AI Hackathon 2026, Open Innovation.
+An agent that watches the **public** land record of your own parcel, spots changes (a new mutation
+entry, a changed owner or extent) and tells you in **Kannada, Hindi or English**, as a Telegram text
+and a voice note, what changed and what to do next. Built for the Ziro Agentic AI Hackathon 2026
+(Open Innovation).
+
+- **Live demo registry:** https://land-record-registry.onrender.com (fictional data, clearly labelled; the free host can take about a minute to wake)
+- **Deployed agent:** GitHub Actions workflow `daily-land-check` (07:00 IST, 19:00 IST, and instantly after a change on the registry)
 
 > A change in a record does not prove anything is wrong. Every alert says to check with the
 > local land records office.
 
 ## How it works
-Scheduler -> Browserbase (cloud browser, read only) -> parser -> differ -> agent decisions
--> VerbX (speaks the alert) -> Telegram (voice note and text). SQLite keeps fingerprints only.
+```
+Registry change ─┐
+Schedule (cron) ─┴─> GitHub Actions ─> Browserbase cloud browser (read only) ─> parser ─> differ
+   ─> decisions (rules, optional model) ─> fixed kn/hi/en templates ─> Telegram text ─> VerbX voice note
+```
+SQLite keeps fingerprints only (owner names are hashed on arrival).
+
+Three parts:
+1. **Demo registry** (`src/portal`, Flask + SQLite, on Render): landlord, buyer and registrar roles.
+   The landlord chooses the alert language on the parcel page. The site itself is available in
+   English, Kannada and Hindi. After a landlord or registrar change, it asks GitHub to run the agent
+   within about 20 seconds (`src/portal/trigger.py`).
+2. **Agent** (`src/main.py`, Python 3.12, on GitHub Actions): reads the registry's public watch page
+   through Browserbase, diffs it with the last snapshot, and alerts. It follows the alert language
+   set on the registry.
+3. **Tools:** Browserbase (browser), VerbX (Kannada/Hindi/English speech), Telegram Bot API (delivery).
 
 Agent decisions:
-- Rules: severity (critical, high, medium), 3 fetch attempts, and a failed-check alert instead of an
+- Rules: severity (critical, high, medium), 3 fetch attempts, and a "check could not run" alert instead of an
   all-clear when a page changes layout, shows a CAPTCHA or cannot be reached.
-- Model (`src/decide.py`): after a change is found, a language model chooses the next action
-  (`alert` or `alert_and_recheck` this evening) and gives a one-line reason, stored with the alert.
-  Guardrails: critical and high changes are always alerted, the model sees only change types, ids,
-  dates, statuses and extents (never owner names), it never writes the alert text, and if it is
-  missing, slow or answers badly the rules decide.
+- Optional model step (`src/decide.py`): chooses `alert` or `alert_and_recheck` this evening and gives a
+  one-line reason. Critical and high changes are always alerted, the model never sees owner names, never
+  writes the alert text, and if it is missing, slow or answers badly the rules decide.
+- Messages come from fixed templates with a grounding check, so an alert only contains facts from the detected change.
+- If a Telegram send fails, the snapshot is rolled back so the next run retries.
 
 ## Privacy and safety
 - Own land only: a parcel is never looked up until the user confirms it is theirs. No search by name.
-- No title deeds or documents are uploaded. Owner names become hashes at once and raw pages are not stored.
+- No title deeds or documents are uploaded. Owner names become hashes at once; raw pages are not stored.
 - Read only. No logins, no form submissions beyond the public parcel fields.
-- No CAPTCHA bypass. Browserbase CAPTCHA solving is switched off and the agent stops and reports instead.
-- Alerts only quote values that appear in the detected change.
+- No CAPTCHA bypass. Browserbase CAPTCHA solving is off; the agent stops and reports instead.
+- The live Karnataka portal is **not** used. Only the labelled demo registry is read.
 
 ## Setup (Windows PowerShell)
 ```
@@ -33,47 +51,46 @@ python -m venv .venv
 .venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 copy .env.example .env      # then fill in the keys
-python -m pytest -q
+python -m pytest -q         # 68 tests
 ```
-Turn on GitHub Pages for this repo so `fixtures/` is public (Browserbase cannot reach localhost),
-and set `FIXTURE_BASE` in `.env`.
 
 ## Run
 ```
+python -m src.portal               # start the demo registry locally
 python -m src.get_chat_id          # after messaging your Telegram bot once
-python -m src.add_parcel           # add your own parcel (public identifiers only)
-python -m src.main --once          # first run saves a snapshot
-python -m src.main --once --scenario mutation   # test page with a new mutation entry
-python -m src.main --schedule      # daily scheduler
+python -m src.add_parcel           # add a parcel (use the /public/<token> link from the registry)
+python -m src.main --once          # one check
+python -m src.main --once --closely  # evening check, only parcels with a pending mutation
+python -m src.main --schedule      # local daily scheduler
 python -m src.report               # writes docs/test-evidence.md
 ```
-Set `LLM_BASE_URL`, `LLM_API_KEY` and `LLM_MODEL` in `.env` to turn on the model step (any provider with an
-OpenAI-style `/chat/completions` endpoint; otherwise edit only `src/llm.py`). Leave them empty to use rules only.
+Deployment (Render, GitHub Actions secrets, instant trigger): `docs/deploy.md`.
+Registry details: `docs/portal.md`. Demo script: `docs/demo-script.md`.
 
-Development switches in `.env`: `DEV_NO_BROWSER=1` reads fixtures from disk, `DRY_RUN=1` prints
-instead of calling Telegram and VerbX. Turn both off for the demo and the submission.
+Optional model step: set `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL` (any OpenAI-style `/chat/completions`
+endpoint). Leave empty to use rules only.
+Development switches: `DEV_NO_BROWSER=1` reads fixtures from disk, `DRY_RUN=1` prints instead of calling
+Telegram and VerbX. Turn both off for real runs.
 
-## Status of each part
+## Status
 | Part | Status |
 |---|---|
-| Differ, severity, messages, safety rules | Done and tested |
-| Test pages and scenario tests | Done and tested locally |
-| Browserbase fetch | Written, **not yet run against a real session** |
-| VerbX client | **Empty: paste the call from the VerbX docs** |
-| Telegram delivery | Written, **not yet run with a real bot** |
-| Model decision step | Written and tested with a fake model, **not yet run against a real model** |
-| Live portal adapter | **Empty: fill in from your notes of the real pages** |
-| Kannada and Hindi messages | **Need a native speaker to review the text and the audio** |
+| Differ, severity, messages, safety rules | Done, tested |
+| Browserbase fetch | Done, real sessions run on test pages and the deployed registry |
+| VerbX voice (Kannada, Hindi, English) | Done, verified on Telegram |
+| Telegram delivery (voice note and text) | Done, verified |
+| Demo registry with language choice and instant trigger | Done, deployed on Render |
+| Scheduled agent on GitHub Actions | Done, runs green |
+| Model decision step | Written and tested; runs only if the `LLM_*` secrets are set, otherwise rules decide |
+| Live Karnataka portal adapter | Not built, on purpose (see limitations) |
+| Kannada and Hindi wording | First draft, native-speaker review recommended |
 
-## Limitations (keep this section honest)
-- The labelled test pages stand in for a record that changes, because a real record cannot be changed on demand.
-- Say which real portal fields and parcels were tested, and what happens at a CAPTCHA.
-- Add the organisers' answer about automated reads of the public portal here.
+## Limitations
+- The demo registry stands in for a record that changes, because a real record cannot be changed on demand.
+- The free Render site sleeps and resets its demo data on restart; the workflow wakes it before each check.
+- Status words and the parcel label stay in English inside Kannada and Hindi alerts.
+- Read-only checks of the real portal are not done until organisers confirm they are acceptable.
 
 ## Test evidence
-See `docs/test-evidence.md`, and add the Browserbase replay links per scenario.
-
-
-## Web UI
-
-`python -m src.server` then open http://localhost:8000. View of the real database (parcel, last check, latest alert, history) in English, Kannada and Hindi. Without a database it shows a clearly labelled SIMULATED demo. Picking EN, ಕನ್ನಡ or हिं saves that language as the alert language for the next alerts (the only thing the page can change). The "Listen" button uses the browser's own voice, not VerbX.
+68 automated tests. Scenario report: `docs/test-evidence.md`. Real Browserbase sessions and Telegram
+alerts in all three languages are shown in the presentation.
